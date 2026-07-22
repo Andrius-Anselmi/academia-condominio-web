@@ -1,0 +1,153 @@
+.ls-screen {
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Equivalente ao Image.asset('assets/images/gym_bg.jpg', fit: BoxFit.cover) */
+.ls-bg {
+  position: absolute;
+  inset: 0;
+  background-image: url("../assets/images/gym_bg.jpg");
+  background-size: cover;
+  background-position: center;
+}
+
+/* Equivalente ao LinearGradient preto do Flutter */
+.ls-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.55),
+    rgba(0, 0, 0, 0.75)
+  );
+}
+
+/* Equivalente ao SafeArea do Flutter (respeita notch / status bar) */
+.ls-safe-area {
+  position: relative;
+  min-height: 100vh;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  display: flex;
+  justify-content: center; /* centraliza a "faixa" mobile no meio da tela */
+}
+
+.ls-content {
+  width: 100%;
+  max-width: 420px; /* largura tipo app mobile, mesmo em monitor grande */
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 24px 30px;
+  box-sizing: border-box;
+}
+
+.ls-top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.ls-title {
+  color: #fff;
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.15;
+  margin: 0;
+  text-align: center;
+}
+
+.ls-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: center;
+  padding: 8px 14px;
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  color: #fff;
+  font-size: 14px;
+}
+
+.ls-badge-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #22c55e; /* verde, equivalente ao Icons.circle verde */
+  display: inline-block;
+}
+
+/* Equivalente ao Spacer() do Flutter: empurra o form pro final */
+.ls-form {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ls-input {
+  width: 100%;
+  padding: 16px 14px;
+  border-radius: 16px;
+  border: none;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 15px;
+  box-sizing: border-box;
+}
+
+.ls-input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.ls-input:focus {
+  outline: 2px solid rgba(201, 138, 68, 0.8); /* accent do Flutter */
+  outline-offset: 1px;
+}
+
+.ls-error {
+  color: #ff8a8a;
+  font-size: 13px;
+  margin: -6px 0 0;
+}
+
+.ls-button {
+  width: 100%;
+  padding: 18px;
+  border: none;
+  border-radius: 30px;
+  background: #c98a44; /* accent do Flutter */
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.ls-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ls-button:not(:disabled):hover {
+  opacity: 0.92;
+}
+
+.ls-forgot {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px;
+  align-self: center;
+}
+
+.ls-forgot:hover {
+  color: #fff;
+}

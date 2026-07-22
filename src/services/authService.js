@@ -1,15 +1,14 @@
 import { supabase } from "../supabaseClient";
 
-function userEmail(username) {
-  return `${username.trim().toLowerCase()}@yourcondominium.app`;
+function emailFromUsername(username) {
+  return `${username.trim().toLowerCase()}@seucondominio.app`;
 }
 
 export async function login(username, password) {
   const { data, error } = await supabase.auth.signInWithPassword({
-    email: userEmail(username),
-    password: password,
+    email: emailFromUsername(username),
+    password,
   });
-
   if (error) throw error;
   return data.user;
 }
@@ -22,15 +21,20 @@ export async function getCurrentUser() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
   if (!user) return null;
 
   const { data, error } = await supabase
-    .from("users")
+    .from("usuarios")
     .select("*")
     .eq("id", user.id)
     .single();
 
   if (error) return null;
-  return data;
+
+  return {
+    id: data.id,
+    username: data.usuario,
+    name: data.nome,
+    apartment: data.apartamento,
+  };
 }
