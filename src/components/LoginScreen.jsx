@@ -54,22 +54,26 @@ export default function LoginScreen() {
             </div>
           </div>
 
-          <form onSubmit={handleLogin} className="ls-form">
+          <form onSubmit={handleLogin} className="ls-form" autoComplete="on">
             <input
               className="ls-input"
               type="text"
+              name="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Usuário"
               autoCapitalize="none"
+              autoComplete="username"
             />
 
             <input
               className="ls-input"
               type="password"
+              name="password"
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
               placeholder="Senha"
+              autoComplete="current-password"
             />
 
             {erro && <p className="ls-error">{erro}</p>}
