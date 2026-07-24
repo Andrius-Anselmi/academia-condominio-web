@@ -20,7 +20,24 @@ export default function App() {
       },
     );
 
-    return () => listener.subscription.unsubscribe();
+    // Workaround para bug conhecido do supabase-js: ao trocar de aba/app
+    // e voltar, o auto-refresh do token às vezes trava ou falha
+    // silenciosamente, fazendo a sessão "sumir" sem motivo real.
+    // Forçamos uma nova checagem manual sempre que a aba volta a ficar visível.
+    function handleVisibilityChange() {
+      if (document.visibilityState === "visible") {
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          setSession(session);
+        });
+      }
+    }
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      listener.subscription.unsubscribe();
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, []);
 
   if (loading) {
