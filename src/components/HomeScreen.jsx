@@ -24,6 +24,17 @@ export default function HomeScreen() {
   const [reservations, setReservations] = useState([]);
   const [confirming, setConfirming] = useState(null);
   const [cancelingId, setCancelingId] = useState(null);
+  const [toast, setToast] = useState(null);
+
+  function showToast(message) {
+    setToast({ id: Date.now(), message });
+  }
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 5000);
+    return () => clearTimeout(timer);
+  }, [toast]);
 
   useEffect(() => {
     getCurrentUser().then((u) => {
@@ -39,6 +50,17 @@ export default function HomeScreen() {
 
   async function handleConfirm(slot) {
     if (!user) return;
+
+    // Checagem de segurança: mesmo que a UI já bloqueie o clique,
+    // confere de novo aqui antes de disparar a chamada.
+    const alreadyHasReservationToday = reservations.some(
+      (r) => r.userId === user.id,
+    );
+    if (alreadyHasReservationToday) {
+      showToast("Você já tem uma reserva nesse dia.");
+      setConfirming(null);
+      return;
+    }
 
     // Atualização otimista: adiciona a reserva na tela na hora,
     // antes mesmo da resposta do servidor. O realtime vai substituir
@@ -70,7 +92,7 @@ export default function HomeScreen() {
     } catch (e) {
       // Falhou: remove a reserva otimista que adicionamos.
       setReservations((prev) => prev.filter((r) => r.id !== tempId));
-      alert(e.message || "Erro ao reservar");
+      showToast(e.message || "Erro ao reservar");
     }
   }
 
@@ -92,7 +114,7 @@ export default function HomeScreen() {
       if (removedReservation) {
         setReservations((prev) => [...prev, removedReservation]);
       }
-      alert(e.message || "Não foi possível cancelar a reserva.");
+      showToast(e.message || "Não foi possível cancelar a reserva.");
     } finally {
       setCancelingId(null);
     }
@@ -178,21 +200,43 @@ export default function HomeScreen() {
           );
           const full = occupied >= 4;
 
+          // Usuário já tem reserva em outro horário nesse mesmo dia?
+          const hasOtherReservationToday = reservations.some(
+            (r) => r.userId === user.id && r.id !== myReservation?.id,
+          );
+          const blockedByDailyLimit =
+            hasOtherReservationToday && !myReservation;
+          const disabled = full || myReservation || blockedByDailyLimit;
+
           let cardClass = "slot-card";
           let statusText = `${4 - occupied} vaga(s) disponível(is)`;
           if (myReservation) {
             cardClass += " slot-mine";
             statusText = "Você reservou";
+          } else if (blockedByDailyLimit) {
+            cardClass += " slot-disabled";
+            statusText = `${4 - occupied} vaga(s) disponível(is)`;
           } else if (full) {
             cardClass += " slot-full";
             statusText = "Lotado";
+          }
+
+          function handleSlotClick() {
+            if (myReservation || full) return;
+            if (blockedByDailyLimit) {
+              showToast(
+                "Você já tem uma reserva nesse dia. Cancele-a para escolher outro horário.",
+              );
+              return;
+            }
+            setConfirming(slot);
           }
 
           return (
             <div
               key={slot.start}
               className={cardClass}
-              onClick={() => !full && !myReservation && setConfirming(slot)}
+              onClick={handleSlotClick}
             >
               <div className="slot-row">
                 <div className="slot-time">
@@ -230,7 +274,7 @@ export default function HomeScreen() {
                   >
                     {cancelingId === myReservation.id ? "..." : "✕"}
                   </button>
-                ) : !full ? (
+                ) : !disabled ? (
                   <span className="chevron">›</span>
                 ) : null}
               </div>
@@ -270,6 +314,19 @@ export default function HomeScreen() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {toast && (
+        <div className="toast">
+          <span>{toast.message}</span>
+          <button
+            className="toast-close"
+            onClick={() => setToast(null)}
+            aria-label="Fechar aviso"
+          >
+            ✕
+          </button>
         </div>
       )}
     </div>
