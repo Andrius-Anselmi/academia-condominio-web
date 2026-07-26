@@ -30,6 +30,12 @@ export default function HomeScreen() {
     setToast({ id: Date.now(), message });
   }
 
+  function isSlotBookable(dayStr, slot) {
+    const slotDateTime = new Date(`${dayStr}T${slot.start}:00`);
+    const cutoff = new Date(slotDateTime.getTime() - 60 * 60 * 1000); // 1h antes
+    return new Date() < cutoff;
+  }
+
   useEffect(() => {
     if (!toast) return;
     const timer = setTimeout(() => setToast(null), 5000);
@@ -200,6 +206,8 @@ export default function HomeScreen() {
           );
           const full = occupied >= 4;
 
+          const bookable = isSlotBookable(selectedDay, slot);
+
           // Usuário já tem reserva em outro horário nesse mesmo dia?
           const hasOtherReservationToday = reservations.some(
             (r) => r.userId === user.id && r.id !== myReservation?.id,
@@ -213,12 +221,12 @@ export default function HomeScreen() {
           if (myReservation) {
             cardClass += " slot-mine";
             statusText = "Você reservou";
-          } else if (blockedByDailyLimit) {
-            cardClass += " slot-disabled";
-            statusText = `${4 - occupied} vaga(s) disponível(is)`;
           } else if (full) {
             cardClass += " slot-full";
             statusText = "Lotado";
+          } else if (!bookable) {
+            cardClass += " slot-closed";
+            statusText = "Encerrado";
           }
 
           function handleSlotClick() {
@@ -236,7 +244,9 @@ export default function HomeScreen() {
             <div
               key={slot.start}
               className={cardClass}
-              onClick={handleSlotClick}
+              onClick={() =>
+                !full && !myReservation && bookable && setConfirming(slot)
+              }
             >
               <div className="slot-row">
                 <div className="slot-time">
@@ -266,15 +276,14 @@ export default function HomeScreen() {
                 {myReservation ? (
                   <button
                     className="cancel-button"
-                    disabled={cancelingId === myReservation.id}
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleCancel(myReservation.id);
+                      cancelReservation(myReservation.id);
                     }}
                   >
-                    {cancelingId === myReservation.id ? "..." : "✕"}
+                    ✕
                   </button>
-                ) : !disabled ? (
+                ) : !full ? (
                   <span className="chevron">›</span>
                 ) : null}
               </div>

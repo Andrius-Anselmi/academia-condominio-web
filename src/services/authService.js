@@ -15,6 +15,13 @@ export async function login(username, password) {
 
 export async function logout() {
   await supabase.auth.signOut();
+  // Força um reload completo da página (em vez de só trocar o
+  // componente React). Isso é necessário pra alguns navegadores
+  // (principalmente Safari no iPhone) reconhecerem a tela de login
+  // como uma página "nova" de verdade e oferecerem o autofill de
+  // usuário/senha salvos. Uma troca de componente via SPA, sem reload,
+  // costuma não disparar esse comportamento.
+  window.location.href = "/";
 }
 
 export async function getCurrentUser() {

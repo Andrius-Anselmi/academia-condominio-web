@@ -1,10 +1,4 @@
 export const timeSlots = [
-  { start: "00:00", end: "01:00" },
-  { start: "01:00", end: "02:00" },
-  { start: "02:00", end: "03:00" },
-  { start: "03:00", end: "04:00" },
-  { start: "04:00", end: "05:00" },
-  { start: "05:00", end: "06:00" },
   { start: "06:00", end: "07:00" },
   { start: "07:00", end: "08:00" },
   { start: "08:00", end: "09:00" },

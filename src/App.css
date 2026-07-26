@@ -275,3 +275,11 @@ body {
 .toast-close:hover {
   opacity: 1;
 }
+
+.slot-card.slot-closed {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.slot-card.slot-closed .slot-status {
+  color: #9a9fa8;
+}
