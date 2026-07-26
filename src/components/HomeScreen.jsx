@@ -6,6 +6,7 @@ import {
   cancelReservation,
 } from "../services/reservationsService";
 import { timeSlots } from "../models/timeSlots";
+import SplashScreen from "./SplashScreen";
 
 const weekDayLabels = ["SEG", "TER", "QUA", "QUI", "SEX", "SÁB", "DOM"];
 const BOOKING_WINDOW_DAYS = 7;
@@ -57,8 +58,6 @@ export default function HomeScreen() {
   async function handleConfirm(slot) {
     if (!user) return;
 
-    // Checagem de segurança: mesmo que a UI já bloqueie o clique,
-    // confere de novo aqui antes de disparar a chamada.
     const alreadyHasReservationToday = reservations.some(
       (r) => r.userId === user.id,
     );
@@ -68,9 +67,6 @@ export default function HomeScreen() {
       return;
     }
 
-    // Atualização otimista: adiciona a reserva na tela na hora,
-    // antes mesmo da resposta do servidor. O realtime vai substituir
-    // essa entrada temporária pela definitiva assim que confirmar.
     const tempId = `temp-${Date.now()}`;
     const optimisticReservation = {
       id: tempId,
@@ -93,10 +89,7 @@ export default function HomeScreen() {
         startTime: slot.start,
         endTime: slot.end,
       });
-      // Sucesso: o realtime vai mandar a lista atualizada (com o id real)
-      // e substituir essa entrada temporária automaticamente.
     } catch (e) {
-      // Falhou: remove a reserva otimista que adicionamos.
       setReservations((prev) => prev.filter((r) => r.id !== tempId));
       showToast(e.message || "Erro ao reservar");
     }
@@ -105,8 +98,6 @@ export default function HomeScreen() {
   async function handleCancel(reservationId) {
     setCancelingId(reservationId);
 
-    // Atualização otimista: guarda a reserva removida pra poder
-    // devolver na tela caso o cancelamento falhe.
     let removedReservation;
     setReservations((prev) => {
       removedReservation = prev.find((r) => r.id === reservationId);
@@ -116,7 +107,6 @@ export default function HomeScreen() {
     try {
       await cancelReservation(reservationId);
     } catch (e) {
-      // Falhou: devolve a reserva pra lista.
       if (removedReservation) {
         setReservations((prev) => [...prev, removedReservation]);
       }
@@ -127,7 +117,7 @@ export default function HomeScreen() {
   }
 
   if (loadingUser) {
-    return <div className="loading-screen">Carregando...</div>;
+    return <SplashScreen />;
   }
 
   if (!user) {
@@ -205,16 +195,13 @@ export default function HomeScreen() {
             (r) => r.userId === user.id,
           );
           const full = occupied >= 4;
-
           const bookable = isSlotBookable(selectedDay, slot);
 
-          // Usuário já tem reserva em outro horário nesse mesmo dia?
           const hasOtherReservationToday = reservations.some(
             (r) => r.userId === user.id && r.id !== myReservation?.id,
           );
           const blockedByDailyLimit =
             hasOtherReservationToday && !myReservation;
-          const disabled = full || myReservation || blockedByDailyLimit;
 
           let cardClass = "slot-card";
           let statusText = `${4 - occupied} vaga(s) disponível(is)`;
@@ -230,7 +217,7 @@ export default function HomeScreen() {
           }
 
           function handleSlotClick() {
-            if (myReservation || full) return;
+            if (myReservation || full || !bookable) return;
             if (blockedByDailyLimit) {
               showToast(
                 "Você já tem uma reserva nesse dia. Cancele-a para escolher outro horário.",
@@ -244,9 +231,7 @@ export default function HomeScreen() {
             <div
               key={slot.start}
               className={cardClass}
-              onClick={() =>
-                !full && !myReservation && bookable && setConfirming(slot)
-              }
+              onClick={handleSlotClick}
             >
               <div className="slot-row">
                 <div className="slot-time">
@@ -276,14 +261,15 @@ export default function HomeScreen() {
                 {myReservation ? (
                   <button
                     className="cancel-button"
+                    disabled={cancelingId === myReservation.id}
                     onClick={(e) => {
                       e.stopPropagation();
-                      cancelReservation(myReservation.id);
+                      handleCancel(myReservation.id);
                     }}
                   >
-                    ✕
+                    {cancelingId === myReservation.id ? "..." : "✕"}
                   </button>
-                ) : !full ? (
+                ) : !full && bookable ? (
                   <span className="chevron">›</span>
                 ) : null}
               </div>

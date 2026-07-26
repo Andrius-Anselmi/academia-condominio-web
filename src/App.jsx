@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "./supabaseClient";
 import LoginScreen from "./components/LoginScreen";
 import HomeScreen from "./components/HomeScreen";
+import SplashScreen from "./components/SplashScreen";
 import "./App.css";
 
 export default function App() {
@@ -41,7 +42,7 @@ export default function App() {
   }, []);
 
   if (loading) {
-    return <div className="loading-screen">Carregando...</div>;
+    return <SplashScreen />;
   }
 
   return session ? <HomeScreen /> : <LoginScreen />;
