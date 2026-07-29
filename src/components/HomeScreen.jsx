@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 import { getCurrentUser, logout } from "../services/authService";
+import { timeSlots } from "../models/timeSlots";
+import SplashScreen from "./SplashScreen";
 import {
   listenToDayReservations,
   createReservation,
   cancelReservation,
+  listenToDayBlocks,
+  blockSlot,
+  unblockSlot,
 } from "../services/reservationsService";
-import { timeSlots } from "../models/timeSlots";
-import SplashScreen from "./SplashScreen";
 
 const weekDayLabels = ["SEG", "TER", "QUA", "QUI", "SEX", "SÁB", "DOM"];
 const BOOKING_WINDOW_DAYS = 7;
@@ -26,6 +29,7 @@ export default function HomeScreen() {
   const [confirming, setConfirming] = useState(null);
   const [cancelingId, setCancelingId] = useState(null);
   const [toast, setToast] = useState(null);
+  const [blocks, setBlocks] = useState([]);
 
   function showToast(message) {
     setToast({ id: Date.now(), message });
@@ -45,6 +49,7 @@ export default function HomeScreen() {
 
   useEffect(() => {
     getCurrentUser().then((u) => {
+      console.log("Usuário carregado:", u);
       setUser(u);
       setLoadingUser(false);
     });
@@ -52,6 +57,11 @@ export default function HomeScreen() {
 
   useEffect(() => {
     const stopListening = listenToDayReservations(selectedDay, setReservations);
+    return stopListening;
+  }, [selectedDay]);
+
+  useEffect(() => {
+    const stopListening = listenToDayBlocks(selectedDay, setBlocks);
     return stopListening;
   }, [selectedDay]);
 
@@ -113,6 +123,37 @@ export default function HomeScreen() {
       showToast(e.message || "Não foi possível cancelar a reserva.");
     } finally {
       setCancelingId(null);
+    }
+  }
+
+  async function handleToggleBlock(slot, blockedSlot) {
+    if (!user?.isAdmin) return;
+
+    if (blockedSlot) {
+      if (!window.confirm("Desbloquear esse horário?")) return;
+      try {
+        await unblockSlot({
+          userId: user.id,
+          date: selectedDay,
+          startTime: slot.start,
+        });
+      } catch (e) {
+        showToast(e.message || "Erro ao desbloquear");
+      }
+      return;
+    }
+
+    const reason = window.prompt("Motivo do bloqueio:", "Manutenção");
+    if (reason === null) return;
+    try {
+      await blockSlot({
+        userId: user.id,
+        date: selectedDay,
+        startTime: slot.start,
+        reason,
+      });
+    } catch (e) {
+      showToast(e.message || "Erro ao bloquear");
     }
   }
 
@@ -196,6 +237,9 @@ export default function HomeScreen() {
           );
           const full = occupied >= 4;
           const bookable = isSlotBookable(selectedDay, slot);
+          const blockedSlot = blocks.find(
+            (b) => b.hora_inicio.slice(0, 5) === slot.start,
+          );
 
           const hasOtherReservationToday = reservations.some(
             (r) => r.userId === user.id && r.id !== myReservation?.id,
@@ -205,7 +249,12 @@ export default function HomeScreen() {
 
           let cardClass = "slot-card";
           let statusText = `${4 - occupied} vaga(s) disponível(is)`;
-          if (myReservation) {
+          if (blockedSlot) {
+            cardClass += " slot-blocked";
+            statusText = blockedSlot.motivo
+              ? `Bloqueado · ${blockedSlot.motivo}`
+              : "Bloqueado";
+          } else if (myReservation) {
             cardClass += " slot-mine";
             statusText = "Você reservou";
           } else if (full) {
@@ -217,7 +266,7 @@ export default function HomeScreen() {
           }
 
           function handleSlotClick() {
-            if (myReservation || full || !bookable) return;
+            if (blockedSlot || myReservation || full || !bookable) return;
             if (blockedByDailyLimit) {
               showToast(
                 "Você já tem uma reserva nesse dia. Cancele-a para escolher outro horário.",
@@ -258,20 +307,37 @@ export default function HomeScreen() {
                     })}
                   </div>
                 </div>
-                {myReservation ? (
-                  <button
-                    className="cancel-button"
-                    disabled={cancelingId === myReservation.id}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleCancel(myReservation.id);
-                    }}
-                  >
-                    {cancelingId === myReservation.id ? "..." : "✕"}
-                  </button>
-                ) : !full && bookable ? (
-                  <span className="chevron">›</span>
-                ) : null}
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  {myReservation ? (
+                    <button
+                      className="cancel-button"
+                      disabled={cancelingId === myReservation.id}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCancel(myReservation.id);
+                      }}
+                    >
+                      {cancelingId === myReservation.id ? "..." : "✕"}
+                    </button>
+                  ) : !full && bookable && !blockedSlot ? (
+                    <span className="chevron">›</span>
+                  ) : null}
+
+                  {user.isAdmin && (
+                    <button
+                      className="admin-block-button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleBlock(slot, blockedSlot);
+                      }}
+                      title={
+                        blockedSlot ? "Desbloquear" : "Bloquear (manutenção)"
+                      }
+                    >
+                      🔧
+                    </button>
+                  )}
+                </div>
               </div>
               {slotReservations.length > 0 && (
                 <div className="slot-names">

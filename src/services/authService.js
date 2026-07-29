@@ -43,5 +43,6 @@ export async function getCurrentUser() {
     username: data.usuario,
     name: data.nome,
     apartment: data.apartamento,
+    isAdmin: data.is_admin,
   };
 }

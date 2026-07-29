@@ -76,3 +76,52 @@ export async function cancelReservation(reservationId) {
     throw new Error("RLS bloqueou o delete — nenhuma linha foi removida");
   }
 }
+
+export function listenToDayBlocks(date, callback) {
+  supabase
+    .from("bloqueios")
+    .select("*")
+    .eq("data", date)
+    .then(({ data }) => callback(data || []));
+
+  const channel = supabase
+    .channel(`blocks-${date}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "bloqueios",
+        filter: `data=eq.${date}`,
+      },
+      () => {
+        supabase
+          .from("bloqueios")
+          .select("*")
+          .eq("data", date)
+          .then(({ data }) => callback(data || []));
+      },
+    )
+    .subscribe();
+
+  return () => supabase.removeChannel(channel);
+}
+
+export async function blockSlot({ userId, date, startTime, reason }) {
+  const { error } = await supabase.rpc("bloquear_horario", {
+    p_usuario_id: userId,
+    p_data: date,
+    p_hora_inicio: startTime,
+    p_motivo: reason,
+  });
+  if (error) throw error;
+}
+
+export async function unblockSlot({ userId, date, startTime }) {
+  const { error } = await supabase.rpc("desbloquear_horario", {
+    p_usuario_id: userId,
+    p_data: date,
+    p_hora_inicio: startTime,
+  });
+  if (error) throw error;
+}
