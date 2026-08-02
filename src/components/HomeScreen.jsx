@@ -49,7 +49,7 @@ export default function HomeScreen() {
 
   useEffect(() => {
     getCurrentUser().then((u) => {
-      console.log("Usuário carregado:", u);
+      // console.log("Usuário carregado:", u);
       setUser(u);
       setLoadingUser(false);
     });
