@@ -41,6 +41,11 @@ export default function HomeScreen() {
     return new Date() < cutoff;
   }
 
+  function formatVagas(quantidade) {
+    if (quantidade === 1) return "1 vaga disponível";
+    return `${quantidade} vagas disponíveis`;
+  }
+
   useEffect(() => {
     if (!toast) return;
     const timer = setTimeout(() => setToast(null), 5000);
@@ -248,7 +253,7 @@ export default function HomeScreen() {
             hasOtherReservationToday && !myReservation;
 
           let cardClass = "slot-card";
-          let statusText = `${4 - occupied} vaga(s) disponível(is)`;
+          let statusText = formatVagas(4 - occupied);
           if (blockedSlot) {
             cardClass += " slot-blocked";
             statusText = blockedSlot.motivo
