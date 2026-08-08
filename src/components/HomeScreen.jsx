@@ -37,7 +37,7 @@ export default function HomeScreen() {
 
   function isSlotBookable(dayStr, slot) {
     const slotDateTime = new Date(`${dayStr}T${slot.start}:00`);
-    const cutoff = new Date(slotDateTime.getTime() - 60 * 60 * 1000); // 1h antes
+    const cutoff = new Date(slotDateTime.getTime() - 10 * 60 * 1000); // 10 min antes
     return new Date() < cutoff;
   }
 
