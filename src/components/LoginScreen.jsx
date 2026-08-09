@@ -33,9 +33,9 @@ export default function LoginScreen() {
     }
   }
 
-  function handleEsqueceuSenha() {
+  function handleForgotPassword() {
     // TODO: ligar navegação real quando existir a tela de recuperação de senha
-    alert("Fale com a portaria para redefinir sua senha.");
+    alert("Fale com a síndica para redefinir sua senha.");
   }
 
   return (
@@ -85,7 +85,7 @@ export default function LoginScreen() {
             <button
               type="button"
               className="ls-forgot"
-              onClick={handleEsqueceuSenha}
+              onClick={handleForgotPassword}
             >
               Esqueceu sua senha?
             </button>

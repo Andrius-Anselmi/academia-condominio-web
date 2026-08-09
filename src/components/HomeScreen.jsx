@@ -11,6 +11,12 @@ import {
   unblockSlot,
 } from "../services/reservationsService";
 
+import {
+  listenToAnnouncements,
+  createAnnouncement,
+  removeAnnouncement,
+} from "../services/announcementsService";
+
 const weekDayLabels = ["SEG", "TER", "QUA", "QUI", "SEX", "SÁB", "DOM"];
 const BOOKING_WINDOW_DAYS = 7;
 
@@ -30,6 +36,12 @@ export default function HomeScreen() {
   const [cancelingId, setCancelingId] = useState(null);
   const [toast, setToast] = useState(null);
   const [blocks, setBlocks] = useState([]);
+  const [blockingSlot, setBlockingSlot] = useState(null);
+  const [blockReason, setBlockReason] = useState("Manutenção");
+  const [unblockingSlot, setUnblockingSlot] = useState(null);
+  const [announcements, setAnnouncements] = useState([]);
+  const [postingAnnouncement, setPostingAnnouncement] = useState(false);
+  const [newAnnouncement, setNewAnnouncement] = useState("");
 
   function showToast(message) {
     setToast({ id: Date.now(), message });
@@ -69,6 +81,11 @@ export default function HomeScreen() {
     const stopListening = listenToDayBlocks(selectedDay, setBlocks);
     return stopListening;
   }, [selectedDay]);
+
+  useEffect(() => {
+    const stopListening = listenToAnnouncements(setAnnouncements);
+    return stopListening;
+  }, []);
 
   async function handleConfirm(slot) {
     if (!user) return;
@@ -131,34 +148,67 @@ export default function HomeScreen() {
     }
   }
 
-  async function handleToggleBlock(slot, blockedSlot) {
-    if (!user?.isAdmin) return;
+  function openBlockModal(slot) {
+    setBlockReason("Manutenção");
+    setBlockingSlot(slot);
+  }
 
-    if (blockedSlot) {
-      if (!window.confirm("Desbloquear esse horário?")) return;
-      try {
-        await unblockSlot({
-          userId: user.id,
-          date: selectedDay,
-          startTime: slot.start,
-        });
-      } catch (e) {
-        showToast(e.message || "Erro ao desbloquear");
-      }
-      return;
-    }
+  function openUnblockConfirm(slot) {
+    setUnblockingSlot(slot);
+  }
 
-    const reason = window.prompt("Motivo do bloqueio:", "Manutenção");
-    if (reason === null) return;
+  async function handleConfirmBlock() {
+    if (!blockingSlot || !user) return;
     try {
       await blockSlot({
         userId: user.id,
         date: selectedDay,
-        startTime: slot.start,
-        reason,
+        startTime: blockingSlot.start,
+        reason: blockReason,
       });
     } catch (e) {
       showToast(e.message || "Erro ao bloquear");
+    } finally {
+      setBlockingSlot(null);
+    }
+  }
+
+  async function handleConfirmUnblock() {
+    if (!unblockingSlot || !user) return;
+    try {
+      await unblockSlot({
+        userId: user.id,
+        date: selectedDay,
+        startTime: unblockingSlot.start,
+      });
+    } catch (e) {
+      showToast(e.message || "Erro ao desbloquear");
+    } finally {
+      setUnblockingSlot(null);
+    }
+  }
+
+  async function handlePostAnnouncement() {
+    if (!newAnnouncement.trim() || !user) return;
+    try {
+      await createAnnouncement({
+        userId: user.id,
+        name: user.name,
+        apartment: user.apartment,
+        message: newAnnouncement.trim(),
+      });
+      setNewAnnouncement("");
+      setPostingAnnouncement(false);
+    } catch (e) {
+      showToast(e.message || "Erro ao postar aviso");
+    }
+  }
+
+  async function handleRemoveAnnouncement(announcementId) {
+    try {
+      await removeAnnouncement(announcementId);
+    } catch (e) {
+      showToast(e.message || "Não foi possível remover o aviso");
     }
   }
 
@@ -229,6 +279,42 @@ export default function HomeScreen() {
         <span className="legend-item">
           <span className="legend-dot yellow" /> sua reserva
         </span>
+      </div>
+
+      <div className="announcements-panel">
+        <div className="announcements-header">
+          <span className="announcements-title">Avisos</span>
+          <button
+            className="add-announcement-button"
+            onClick={() => setPostingAnnouncement(true)}
+          >
+            + Avisar
+          </button>
+        </div>
+
+        {announcements.length === 0 ? (
+          <p className="announcements-empty">Nenhum aviso no momento.</p>
+        ) : (
+          announcements.map((a) => (
+            <div key={a.id} className="announcement-item">
+              <div className="announcement-text">
+                <span className="announcement-message">{a.message}</span>
+                <span className="announcement-meta">
+                  {a.residentName} · {a.apartment}
+                </span>
+              </div>
+              {(a.userId === user.id || user.isAdmin) && (
+                <button
+                  className="remove-announcement-button"
+                  onClick={() => handleRemoveAnnouncement(a.id)}
+                  title="Remover aviso"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          ))
+        )}
       </div>
 
       <div className="slots-list">
@@ -333,7 +419,11 @@ export default function HomeScreen() {
                       className="admin-block-button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleToggleBlock(slot, blockedSlot);
+                        if (blockedSlot) {
+                          openUnblockConfirm(slot);
+                        } else {
+                          openBlockModal(slot);
+                        }
                       }}
                       title={
                         blockedSlot ? "Desbloquear" : "Bloquear (manutenção)"
@@ -377,6 +467,90 @@ export default function HomeScreen() {
                 onClick={() => handleConfirm(confirming)}
               >
                 Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {blockingSlot && (
+        <div className="modal-overlay" onClick={() => setBlockingSlot(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>
+              {blockingSlot.start} – {blockingSlot.end}
+            </h3>
+            <p>Motivo do bloqueio:</p>
+            <input
+              type="text"
+              className="block-reason-input"
+              value={blockReason}
+              onChange={(e) => setBlockReason(e.target.value)}
+              autoFocus
+            />
+            <div className="modal-buttons">
+              <button
+                className="button-secondary"
+                onClick={() => setBlockingSlot(null)}
+              >
+                Cancelar
+              </button>
+              <button className="button-primary" onClick={handleConfirmBlock}>
+                Bloquear
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {unblockingSlot && (
+        <div className="modal-overlay" onClick={() => setUnblockingSlot(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>
+              {unblockingSlot.start} – {unblockingSlot.end}
+            </h3>
+            <p>Desbloquear esse horário?</p>
+            <div className="modal-buttons">
+              <button
+                className="button-secondary"
+                onClick={() => setUnblockingSlot(null)}
+              >
+                Cancelar
+              </button>
+              <button className="button-primary" onClick={handleConfirmUnblock}>
+                Desbloquear
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {postingAnnouncement && (
+        <div
+          className="modal-overlay"
+          onClick={() => setPostingAnnouncement(false)}
+        >
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>Novo aviso</h3>
+            <textarea
+              className="announcement-textarea"
+              value={newAnnouncement}
+              onChange={(e) => setNewAnnouncement(e.target.value)}
+              maxLength={200}
+              rows={3}
+              autoFocus
+            />
+            <div className="modal-buttons">
+              <button
+                className="button-secondary"
+                onClick={() => setPostingAnnouncement(false)}
+              >
+                Cancelar
+              </button>
+              <button
+                className="button-primary"
+                onClick={handlePostAnnouncement}
+              >
+                Publicar
               </button>
             </div>
           </div>
