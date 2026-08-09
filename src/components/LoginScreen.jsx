@@ -50,7 +50,7 @@ export default function LoginScreen() {
 
             <div className="ls-badge">
               <span className="ls-badge-dot" />
-              <span>Aberta agora · 05h às 00h</span>
+              <span>Aberta agora · 06h às 00h</span>
             </div>
           </div>
 
