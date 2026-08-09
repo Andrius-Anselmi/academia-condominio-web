@@ -47,10 +47,16 @@ export default function HomeScreen() {
     setToast({ id: Date.now(), message });
   }
 
-  function isSlotBookable(dayStr, slot) {
+  function isSlotClosed(dayStr, slot) {
     const slotDateTime = new Date(`${dayStr}T${slot.start}:00`);
-    const cutoff = new Date(slotDateTime.getTime() - 10 * 60 * 1000); // 10 min antes
-    return new Date() < cutoff;
+    const closeCutoff = new Date(slotDateTime.getTime() - 10 * 60 * 1000); // fecha 10 min antes
+    return new Date() >= closeCutoff;
+  }
+
+  function isSlotNotYetOpen(dayStr, slot) {
+    const slotDateTime = new Date(`${dayStr}T${slot.start}:00`);
+    const openCutoff = new Date(slotDateTime.getTime() - 48 * 60 * 60 * 1000); // abre 48h antes
+    return new Date() < openCutoff;
   }
 
   function formatVagas(quantidade) {
@@ -327,7 +333,9 @@ export default function HomeScreen() {
             (r) => r.userId === user.id,
           );
           const full = occupied >= 4;
-          const bookable = isSlotBookable(selectedDay, slot);
+          const closed = isSlotClosed(selectedDay, slot);
+          const notYetOpen = isSlotNotYetOpen(selectedDay, slot);
+          const bookable = !closed && !notYetOpen;
           const blockedSlot = blocks.find(
             (b) => b.hora_inicio.slice(0, 5) === slot.start,
           );
@@ -351,9 +359,12 @@ export default function HomeScreen() {
           } else if (full) {
             cardClass += " slot-full";
             statusText = "Lotado";
-          } else if (!bookable) {
+          } else if (closed) {
             cardClass += " slot-closed";
             statusText = "Encerrado";
+          } else if (notYetOpen) {
+            cardClass += " slot-not-open";
+            statusText = "Ainda não liberado";
           }
 
           function handleSlotClick() {

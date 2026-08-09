@@ -414,3 +414,11 @@ body {
   margin: 10px 0 4px;
   box-sizing: border-box;
 }
+
+.slot-card.slot-not-open {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.slot-card.slot-not-open .slot-status {
+  color: #9a9fa8;
+}
