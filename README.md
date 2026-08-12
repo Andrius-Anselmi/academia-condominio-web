@@ -160,4 +160,4 @@ npm run dev
 
 ## Licença
 
-Este projeto não possui licença definida no momento.
+Este projeto está licenciado sob a [MIT License](LICENSE).
