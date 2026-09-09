@@ -7,6 +7,19 @@ O sistema foi pensado para dois perfis principais:
 - Moradores, que acessam a aplicação para entrar com seu usuário, visualizar a disponibilidade e reservar um horário.
 - Administradores, que além das reservas também podem bloquear e desbloquear horários para manutenção e publicar avisos para todos os usuários.
 
+## Screenshots
+
+<table>
+  <tr>
+    <td align="center"><strong>Tela de Login</strong></td>
+    <td align="center"><strong>Tela de Horários</strong></td>
+  </tr>
+  <tr>
+    <td><img src="docs/images/tela-login.png" width="280" alt="Tela de login da aplicação"></td>
+    <td><img src="docs/images/tela-horarios.png" width="280" alt="Tela de horários com disponibilidade, status e avisos"></td>
+  </tr>
+</table>
+
 ## O Que A Aplicação Resolve
 
 Antes da solução digital, a gestão de uma academia de condomínio costuma depender de comunicação manual, o que gera conflitos, dúvidas sobre disponibilidade e dificuldade para registrar bloqueios ou comunicados. Este projeto resolve esse problema central ao centralizar em uma única interface:
