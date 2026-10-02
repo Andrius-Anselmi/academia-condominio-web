@@ -48,9 +48,8 @@ export default function HomeScreen() {
   }
 
   function isSlotClosed(dayStr, slot) {
-    const slotDateTime = new Date(`${dayStr}T${slot.start}:00`);
-    const closeCutoff = new Date(slotDateTime.getTime() - 10 * 60 * 1000); // fecha 10 min antes
-    return new Date() >= closeCutoff;
+    const slotEndDateTime = new Date(`${dayStr}T${slot.end}:00`);
+    return new Date() >= slotEndDateTime;
   }
 
   function isSlotNotYetOpen(dayStr, slot) {
