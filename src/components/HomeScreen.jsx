@@ -24,6 +24,7 @@ import {
 } from "../services/treadmillService";
 
 const TREADMILL_AFTER_MINUTES = 20;
+const CAPACITY_PER_SLOT = 3;
 
 const weekDayLabels = ["SEG", "TER", "QUA", "QUI", "SEX", "SÁB", "DOM"];
 const BOOKING_WINDOW_DAYS = 7;
@@ -63,14 +64,6 @@ export default function HomeScreen() {
   function getSlotEnd(dayStr, slot) {
     const end = new Date(`${dayStr}T${slot.end}:00`);
     if (slot.end <= slot.start) end.setDate(end.getDate() + 1);
-    if (slot.start === "23:00") {
-      console.log(
-        "slot 23h → fim:",
-        end.toString(),
-        "| agora:",
-        new Date().toString(),
-      );
-    }
     return end;
   }
 
@@ -252,7 +245,6 @@ export default function HomeScreen() {
 
   useEffect(() => {
     getCurrentUser().then((u) => {
-      // console.log("Usuário carregado:", u);
       setUser(u);
       setLoadingUser(false);
     });
@@ -517,7 +509,7 @@ export default function HomeScreen() {
           const myReservation = slotReservations.find(
             (r) => r.userId === user.id,
           );
-          const full = occupied >= 4;
+          const full = occupied >= CAPACITY_PER_SLOT;
           const closed = isSlotClosed(selectedDay, slot);
           const notYetOpen = isSlotNotYetOpen(selectedDay, slot);
           const bookable = !closed && !notYetOpen;
@@ -532,7 +524,7 @@ export default function HomeScreen() {
             hasOtherReservationToday && !myReservation;
 
           let cardClass = "slot-card";
-          let statusText = formatVagas(4 - occupied);
+          let statusText = formatVagas(CAPACITY_PER_SLOT - occupied);
           if (blockedSlot) {
             cardClass += " slot-blocked";
             statusText = blockedSlot.motivo
@@ -579,7 +571,7 @@ export default function HomeScreen() {
                 <div className="slot-middle">
                   <span className="slot-status">{statusText}</span>
                   <div className="slot-dots">
-                    {Array.from({ length: 4 }, (_, i) => {
+                    {Array.from({ length: CAPACITY_PER_SLOT }, (_, i) => {
                       const r = slotReservations[i];
                       let color = "";
                       if (r) {
