@@ -85,10 +85,6 @@ export default function HomeScreen() {
     };
   }
 
-  function intervalsOverlap(a, b) {
-    return a.from < b.to && b.from < a.to;
-  }
-
   // Retorna { status, reservation?, label? }
   // status: "free" | "mine" | "taken" | "limit" | "needs-reservation" | "unavailable"
   function getTreadmillState({ slot, type, myReservation, blockedSlot }) {
@@ -101,17 +97,7 @@ export default function HomeScreen() {
         : { status: "taken", reservation: existing };
     }
 
-    // sobreposição real (ex.: "depois" das 18h x "durante" das 19h)
     const interval = getTreadmillInterval(selectedDay, slot, type);
-    const conflict = treadmill.find((t) => {
-      const tSlot = timeSlots.find((s) => s.start === t.slotStart);
-      if (!tSlot) return false;
-      return intervalsOverlap(
-        interval,
-        getTreadmillInterval(selectedDay, tSlot, t.type),
-      );
-    });
-    if (conflict) return { status: "taken", reservation: conflict };
 
     if (treadmill.some((t) => t.userId === user.id)) return { status: "limit" };
 
