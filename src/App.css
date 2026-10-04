@@ -422,3 +422,71 @@ body {
 .slot-card.slot-not-open .slot-status {
   color: #9a9fa8;
 }
+
+.treadmill-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.treadmill-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.treadmill-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid #d8d4cc;
+  background: transparent;
+  color: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.treadmill-button:disabled {
+  color: inherit;
+  cursor: not-allowed;
+}
+
+.treadmill-free:hover {
+  border-color: #e8a838;
+}
+
+.treadmill-mine {
+  background: #e8a838;
+  border-color: #e8a838;
+  color: #1a1a1a;
+}
+
+.treadmill-taken {
+  background: #ece9e2;
+  opacity: 0.8;
+}
+
+.treadmill-unavailable {
+  opacity: 0.4;
+}
+.treadmill-limit,
+.treadmill-needs-reservation {
+  opacity: 0.6;
+}
+
+.treadmill-owner {
+  min-height: 12px;
+  font-size: 10px;
+  text-align: center;
+  opacity: 0.7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

@@ -17,6 +17,14 @@ import {
   removeAnnouncement,
 } from "../services/announcementsService";
 
+import {
+  listenToDayTreadmill,
+  createTreadmillReservation,
+  cancelTreadmillReservation,
+} from "../services/treadmillService";
+
+const TREADMILL_AFTER_MINUTES = 20;
+
 const weekDayLabels = ["SEG", "TER", "QUA", "QUI", "SEX", "SÁB", "DOM"];
 const BOOKING_WINDOW_DAYS = 7;
 
@@ -42,20 +50,193 @@ export default function HomeScreen() {
   const [announcements, setAnnouncements] = useState([]);
   const [postingAnnouncement, setPostingAnnouncement] = useState(false);
   const [newAnnouncement, setNewAnnouncement] = useState("");
+  const [treadmill, setTreadmill] = useState([]);
 
   function showToast(message) {
     setToast({ id: Date.now(), message });
   }
 
   function isSlotClosed(dayStr, slot) {
-    const slotEndDateTime = new Date(`${dayStr}T${slot.end}:00`);
-    return new Date() >= slotEndDateTime;
+    return new Date() >= getSlotEnd(dayStr, slot);
+  }
+
+  function getSlotEnd(dayStr, slot) {
+    const end = new Date(`${dayStr}T${slot.end}:00`);
+    if (slot.end <= slot.start) end.setDate(end.getDate() + 1);
+    if (slot.start === "23:00") {
+      console.log(
+        "slot 23h → fim:",
+        end.toString(),
+        "| agora:",
+        new Date().toString(),
+      );
+    }
+    return end;
   }
 
   function isSlotNotYetOpen(dayStr, slot) {
     const slotDateTime = new Date(`${dayStr}T${slot.start}:00`);
     const openCutoff = new Date(slotDateTime.getTime() - 48 * 60 * 60 * 1000); // abre 48h antes
     return new Date() < openCutoff;
+  }
+
+  function getTreadmillInterval(dayStr, slot, type) {
+    const start = new Date(`${dayStr}T${slot.start}:00`);
+    const end = getSlotEnd(dayStr, slot);
+
+    if (type === "during") return { from: start, to: end };
+
+    return {
+      from: end,
+      to: new Date(end.getTime() + TREADMILL_AFTER_MINUTES * 60 * 1000),
+    };
+  }
+
+  function intervalsOverlap(a, b) {
+    return a.from < b.to && b.from < a.to;
+  }
+
+  // Retorna { status, reservation?, label? }
+  // status: "free" | "mine" | "taken" | "limit" | "needs-reservation" | "unavailable"
+  function getTreadmillState({ slot, type, myReservation, blockedSlot }) {
+    const existing = treadmill.find(
+      (t) => t.slotStart === slot.start && t.type === type,
+    );
+    if (existing) {
+      return existing.userId === user.id
+        ? { status: "mine", reservation: existing }
+        : { status: "taken", reservation: existing };
+    }
+
+    // sobreposição real (ex.: "depois" das 18h x "durante" das 19h)
+    const interval = getTreadmillInterval(selectedDay, slot, type);
+    const conflict = treadmill.find((t) => {
+      const tSlot = timeSlots.find((s) => s.start === t.slotStart);
+      if (!tSlot) return false;
+      return intervalsOverlap(
+        interval,
+        getTreadmillInterval(selectedDay, tSlot, t.type),
+      );
+    });
+    if (conflict) return { status: "taken", reservation: conflict };
+
+    if (treadmill.some((t) => t.userId === user.id)) return { status: "limit" };
+
+    if (blockedSlot) return { status: "unavailable" };
+    if (isSlotNotYetOpen(selectedDay, slot)) return { status: "unavailable" };
+    if (new Date() >= interval.to) return { status: "unavailable" };
+
+    if (type === "after" && !myReservation)
+      return { status: "needs-reservation" };
+
+    return { status: "free" };
+  }
+
+  async function handleTreadmillClick(slot, type, state) {
+    if (state.status === "mine") {
+      const { from } = getTreadmillInterval(selectedDay, slot, type);
+      if (new Date() >= from) {
+        showToast(
+          "Não dá para cancelar a esteira depois que o horário começou.",
+        );
+        return;
+      }
+
+      const removed = state.reservation;
+      setTreadmill((prev) => prev.filter((t) => t.id !== removed.id));
+      try {
+        await cancelTreadmillReservation({ userId: user.id, id: removed.id });
+      } catch (e) {
+        setTreadmill((prev) => [...prev, removed]);
+        showToast(e.message || "Não foi possível cancelar a esteira.");
+      }
+      return;
+    }
+
+    if (state.status === "limit") {
+      showToast(
+        "Você já tem um uso de esteira nesse dia. Cancele-o para escolher outro.",
+      );
+      return;
+    }
+    if (state.status === "needs-reservation") {
+      showToast(
+        "Para usar a esteira depois, você precisa ter reservado esse horário de treino.",
+      );
+      return;
+    }
+    if (state.status !== "free") return;
+
+    const tempId = `temp-${Date.now()}`;
+    setTreadmill((prev) => [
+      ...prev,
+      {
+        id: tempId,
+        userId: user.id,
+        apartment: user.apartment,
+        residentName: user.name,
+        date: selectedDay,
+        slotStart: slot.start,
+        type,
+      },
+    ]);
+
+    try {
+      await createTreadmillReservation({
+        userId: user.id,
+        apartment: user.apartment,
+        name: user.name,
+        date: selectedDay,
+        slotStart: slot.start,
+        type,
+      });
+    } catch (e) {
+      setTreadmill((prev) => prev.filter((t) => t.id !== tempId));
+      showToast(e.message || "Erro ao reservar a esteira");
+    }
+  }
+
+  function renderTreadmillButton(slot, type, myReservation, blockedSlot) {
+    const state = getTreadmillState({ slot, type, myReservation, blockedSlot });
+    const title = type === "during" ? "Durante" : "Após";
+
+    const hasOwner = state.status === "mine" || state.status === "taken";
+    const owner = hasOwner
+      ? `${state.reservation.residentName} · ${state.reservation.apartment}`
+      : "";
+
+    const hints = {
+      limit: "Você já tem esteira nesse dia",
+      "needs-reservation": "Só quem treinou nesse horário",
+      unavailable: "Indisponível",
+    };
+
+    const disabled = state.status === "taken" || state.status === "unavailable";
+
+    const canCancel =
+      state.status === "mine" &&
+      new Date() < getTreadmillInterval(selectedDay, slot, type).from;
+
+    return (
+      <div className="treadmill-item" key={type}>
+        <button
+          className={`treadmill-button treadmill-${state.status}`}
+          disabled={disabled}
+          title={
+            hints[state.status] ||
+            (type === "after" ? "20 minutos após o treino" : "")
+          }
+          onClick={(e) => {
+            e.stopPropagation();
+            handleTreadmillClick(slot, type, state);
+          }}
+        >
+          🏃 {title}
+          {canCancel ? " ✕" : ""}
+        </button>
+        <span className="treadmill-owner">{owner}</span>
+      </div>
+    );
   }
 
   function formatVagas(quantidade) {
@@ -91,6 +272,11 @@ export default function HomeScreen() {
     const stopListening = listenToAnnouncements(setAnnouncements);
     return stopListening;
   }, []);
+
+  useEffect(() => {
+    const stop = listenToDayTreadmill(selectedDay, setTreadmill);
+    return stop;
+  }, [selectedDay]);
 
   async function handleConfirm(slot) {
     if (!user) return;
@@ -443,6 +629,23 @@ export default function HomeScreen() {
                     </button>
                   )}
                 </div>
+              </div>
+              <div
+                className="treadmill-row"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {renderTreadmillButton(
+                  slot,
+                  "during",
+                  myReservation,
+                  blockedSlot,
+                )}
+                {renderTreadmillButton(
+                  slot,
+                  "after",
+                  myReservation,
+                  blockedSlot,
+                )}
               </div>
               {slotReservations.length > 0 && (
                 <div className="slot-names">
