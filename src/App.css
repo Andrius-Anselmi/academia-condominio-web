@@ -490,3 +490,283 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* ===================================================== */
+/* NOVO: toggle de tema + card de horário estilo Strava   */
+/* (agora o card acompanha o tema claro/escuro também)    */
+/* ===================================================== */
+
+.theme-toggle {
+  background: none;
+  border: none;
+  font-size: 15px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+/* Variáveis de tema: página E card de horário usam as mesmas,
+   então tudo troca junto entre claro/escuro. */
+.home-container {
+  --page-bg: #f2efe9;
+  --panel-bg: #ffffff;
+  --panel-border: #e4dfd5;
+  --page-text: #14161a;
+  --page-text-muted: #9a9fa8;
+
+  --sc-bg: #ffffff;
+  --sc-border: #e4dfd5;
+  --sc-badge-bg: #f3f0ea;
+  --sc-text: #14161a;
+  --sc-text-muted: #9a9fa8;
+  --sc-chevron: #c8c3b7;
+
+  --sc-pill-available-bg: rgba(43, 76, 126, 0.12);
+  --sc-pill-available-text: #2b4c7e;
+  --sc-pill-mine-bg: rgba(232, 163, 61, 0.18);
+  --sc-pill-mine-text: #b6791e;
+  --sc-pill-full-bg: rgba(193, 80, 61, 0.12);
+  --sc-pill-full-text: #c1503d;
+  --sc-pill-muted-bg: #f0eeea;
+  --sc-pill-muted-text: #9a9fa8;
+
+  --sc-cancel-border: rgba(193, 80, 61, 0.3);
+  --sc-cancel-text: #c1503d;
+  --sc-admin-border: #e4dfd5;
+  --sc-admin-text: #8c93a0;
+
+  background: var(--page-bg);
+}
+
+.home-container[data-theme="dark"] {
+  --page-bg: #0b0e14;
+  --panel-bg: #171b24;
+  --panel-border: #262b36;
+  --page-text: #f3f4f6;
+  --page-text-muted: #9aa1ae;
+
+  --sc-bg: #14161a;
+  --sc-border: #20232b;
+  --sc-badge-bg: #1f222a;
+  --sc-text: #f4f1ea;
+  --sc-text-muted: #8c93a0;
+  --sc-chevron: #6b7078;
+
+  --sc-pill-available-bg: rgba(43, 76, 126, 0.25);
+  --sc-pill-available-text: #7ea3d6;
+  --sc-pill-mine-bg: rgba(232, 163, 61, 0.22);
+  --sc-pill-mine-text: #e8a33d;
+  --sc-pill-full-bg: rgba(193, 80, 61, 0.22);
+  --sc-pill-full-text: #e08271;
+  --sc-pill-muted-bg: rgba(255, 255, 255, 0.08);
+  --sc-pill-muted-text: #6b7078;
+
+  --sc-cancel-border: rgba(193, 80, 61, 0.4);
+  --sc-cancel-text: #e08271;
+  --sc-admin-border: #2a2e38;
+  --sc-admin-text: #8c93a0;
+}
+
+.home-container[data-theme="dark"] .announcements-panel {
+  background: var(--panel-bg);
+  border-color: var(--panel-border);
+}
+.home-container[data-theme="dark"] .announcement-message {
+  color: var(--page-text);
+}
+.home-container[data-theme="dark"] .announcements-empty,
+.home-container[data-theme="dark"] .announcement-meta {
+  color: var(--page-text-muted);
+}
+.home-container[data-theme="dark"] .modal-content {
+  background: var(--panel-bg);
+  color: var(--page-text);
+}
+.home-container[data-theme="dark"] .modal-content h3,
+.home-container[data-theme="dark"] .modal-content p {
+  color: var(--page-text);
+}
+.home-container[data-theme="dark"] .block-reason-input,
+.home-container[data-theme="dark"] .announcement-textarea {
+  background: var(--page-bg);
+  border-color: var(--panel-border);
+  color: var(--page-text);
+}
+.home-container[data-theme="dark"] .button-secondary {
+  border-color: var(--panel-border);
+  color: var(--page-text);
+}
+
+/* CARD DE HORÁRIO — agora troca de cor junto com o tema da página,
+   usando as variáveis --sc-* definidas acima. */
+.slot-card-v2 {
+  background: var(--sc-bg);
+  border: 1px solid var(--sc-border);
+  border-radius: 16px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.sc-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 14px;
+  cursor: pointer;
+}
+
+/* Ícone de halter: a cor muda conforme o estado do horário */
+.sc-badge {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sc-badge-available {
+  background: var(--sc-pill-available-bg);
+  color: var(--sc-pill-available-text);
+}
+.sc-badge-mine {
+  background: #e8a33d;
+  color: #14161a;
+}
+.sc-badge-full {
+  background: var(--sc-pill-full-bg);
+  color: var(--sc-pill-full-text);
+}
+.sc-badge-muted {
+  background: var(--sc-pill-muted-bg);
+  color: var(--sc-pill-muted-text);
+}
+
+.sc-main {
+  flex: 1;
+  min-width: 0;
+}
+.sc-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--sc-text);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+.sc-subtitle {
+  font-size: 12px;
+  color: var(--sc-text-muted);
+  margin-top: 2px;
+}
+
+.sc-pill {
+  flex-shrink: 0;
+  min-width: 26px;
+  text-align: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.sc-pill-available {
+  background: var(--sc-pill-available-bg);
+  color: var(--sc-pill-available-text);
+}
+.sc-pill-mine {
+  background: var(--sc-pill-mine-bg);
+  color: var(--sc-pill-mine-text);
+}
+.sc-pill-full {
+  background: var(--sc-pill-full-bg);
+  color: var(--sc-pill-full-text);
+}
+.sc-pill-muted {
+  background: var(--sc-pill-muted-bg);
+  color: var(--sc-pill-muted-text);
+}
+
+.sc-chevron-btn {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--sc-chevron);
+  font-size: 16px;
+  padding: 2px 6px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.sc-details {
+  padding: 0 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sc-names {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--sc-text-muted);
+}
+
+.sc-empty-hint {
+  font-size: 11px;
+  color: var(--sc-text-muted);
+}
+
+.sc-treadmill-row {
+  display: flex;
+  gap: 8px;
+}
+
+.sc-cancel-btn {
+  align-self: flex-start;
+  background: none;
+  border: 1px solid var(--sc-cancel-border);
+  color: var(--sc-cancel-text);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.sc-cancel-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.sc-admin-btn {
+  align-self: flex-start;
+  background: none;
+  border: 1px solid var(--sc-admin-border);
+  color: var(--sc-admin-text);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* Botões de esteira dentro do card: no modo claro, os estilos padrão
+   do .treadmill-* já funcionam bem (foram feitos pra fundo claro).
+   Só sobrescrevemos no modo ESCURO, pra manter contraste. */
+.home-container[data-theme="dark"] .slot-card-v2 .treadmill-button {
+  border-color: #2a2e38;
+  color: #c7ccd6;
+}
+.home-container[data-theme="dark"] .slot-card-v2 .treadmill-free:hover {
+  border-color: #e8a33d;
+}
+.home-container[data-theme="dark"] .slot-card-v2 .treadmill-mine {
+  background: #e8a33d;
+  border-color: #e8a33d;
+  color: #14161a;
+}
+.home-container[data-theme="dark"] .slot-card-v2 .treadmill-taken {
+  background: #1f222a;
+  border-color: #2a2e38;
+  color: #6b7078;
+}
+.home-container[data-theme="dark"] .slot-card-v2 .treadmill-owner {
+  color: #6b7078;
+}

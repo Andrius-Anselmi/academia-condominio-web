@@ -36,6 +36,28 @@ function formatDate(date) {
   return `${y}-${m}-${d}`;
 }
 
+// Ícone de halter (usa currentColor, então a cor vem do CSS do badge)
+function DumbbellIcon({ size = 22 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="-100 -100 200 200"
+      aria-hidden="true"
+    >
+      <g transform="rotate(-35)" fill="currentColor">
+        <rect x="-50" y="-6" width="100" height="12" rx="3" opacity="0.5" />
+        <rect x="-92" y="-12" width="10" height="24" rx="4" opacity="0.55" />
+        <rect x="-84" y="-27" width="18" height="54" rx="6" opacity="0.75" />
+        <rect x="-68" y="-38" width="22" height="76" rx="7" />
+        <rect x="82" y="-12" width="10" height="24" rx="4" opacity="0.55" />
+        <rect x="66" y="-27" width="18" height="54" rx="6" opacity="0.75" />
+        <rect x="46" y="-38" width="22" height="76" rx="7" />
+      </g>
+    </svg>
+  );
+}
+
 export default function HomeScreen() {
   const [user, setUser] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
@@ -52,6 +74,27 @@ export default function HomeScreen() {
   const [postingAnnouncement, setPostingAnnouncement] = useState(false);
   const [newAnnouncement, setNewAnnouncement] = useState("");
   const [treadmill, setTreadmill] = useState([]);
+  const [expandedSlots, setExpandedSlots] = useState(() => new Set());
+  const [theme, setTheme] = useState(() => {
+    if (typeof window === "undefined") return "light";
+    return localStorage.getItem("homeTheme") || "light";
+  });
+
+  useEffect(() => {
+    localStorage.setItem("homeTheme", theme);
+  }, [theme]);
+
+  function toggleExpanded(slotStart) {
+    setExpandedSlots((prev) => {
+      const next = new Set(prev);
+      if (next.has(slotStart)) {
+        next.delete(slotStart);
+      } else {
+        next.add(slotStart);
+      }
+      return next;
+    });
+  }
 
   function showToast(message) {
     setToast({ id: Date.now(), message });
@@ -402,7 +445,7 @@ export default function HomeScreen() {
   });
 
   return (
-    <div className="home-container">
+    <div className="home-container" data-theme={theme}>
       <div className="home-header">
         <div className="home-header-top">
           <div className="apartment-badge">
@@ -411,9 +454,21 @@ export default function HomeScreen() {
               {user.name.toUpperCase()} · APTO {user.apartment}
             </span>
           </div>
-          <button className="logout-link" onClick={logout}>
-            sair
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <button
+              className="theme-toggle"
+              onClick={() =>
+                setTheme((t) => (t === "light" ? "dark" : "light"))
+              }
+              aria-label="Alternar tema claro/escuro"
+              title="Alternar tema"
+            >
+              {theme === "light" ? "🌙" : "☀️"}
+            </button>
+            <button className="logout-link" onClick={logout}>
+              sair
+            </button>
+          </div>
         </div>
         <h2 className="home-title">Horários</h2>
         <div className="day-picker">
@@ -509,26 +564,36 @@ export default function HomeScreen() {
           const blockedByDailyLimit =
             hasOtherReservationToday && !myReservation;
 
-          let cardClass = "slot-card";
           let statusText = formatVagas(CAPACITY_PER_SLOT - occupied);
+          let pillLabel = String(CAPACITY_PER_SLOT - occupied);
+          let pillClass = "sc-pill sc-pill-available";
+
           if (blockedSlot) {
-            cardClass += " slot-blocked";
             statusText = blockedSlot.motivo
               ? `Bloqueado · ${blockedSlot.motivo}`
               : "Bloqueado";
+            pillLabel = "🔧";
+            pillClass = "sc-pill sc-pill-muted";
           } else if (myReservation) {
-            cardClass += " slot-mine";
             statusText = "Você reservou";
+            pillLabel = "✓";
+            pillClass = "sc-pill sc-pill-mine";
           } else if (full) {
-            cardClass += " slot-full";
             statusText = "Lotado";
+            pillLabel = "Cheio";
+            pillClass = "sc-pill sc-pill-full";
           } else if (closed) {
-            cardClass += " slot-closed";
             statusText = "Encerrado";
+            pillLabel = "—";
+            pillClass = "sc-pill sc-pill-muted";
           } else if (notYetOpen) {
-            cardClass += " slot-not-open";
             statusText = "Ainda não liberado";
+            pillLabel = "🔒";
+            pillClass = "sc-pill sc-pill-muted";
           }
+
+          // "available" | "mine" | "full" | "muted" — define a cor do ícone
+          const tone = pillClass.replace("sc-pill sc-pill-", "");
 
           function handleSlotClick() {
             if (blockedSlot || myReservation || full || !bookable) return;
@@ -541,56 +606,83 @@ export default function HomeScreen() {
             setConfirming(slot);
           }
 
+          const isExpanded = expandedSlots.has(slot.start);
+          const hasDetails =
+            slotReservations.length > 0 || myReservation || user.isAdmin;
+
           return (
-            <div
-              key={slot.start}
-              className={cardClass}
-              onClick={handleSlotClick}
-            >
-              <div className="slot-row">
-                <div className="slot-time">
-                  <strong>
+            <div key={slot.start} className="slot-card-v2">
+              <div className="sc-row" onClick={handleSlotClick}>
+                <div className={`sc-badge sc-badge-${tone}`}>
+                  <DumbbellIcon />
+                </div>
+                <div className="sc-main">
+                  <div className="sc-title">
                     {slot.start}–{slot.end}
-                  </strong>
-                  <small>1h</small>
-                </div>
-                <div className="slot-middle">
-                  <span className="slot-status">{statusText}</span>
-                  <div className="slot-dots">
-                    {Array.from({ length: CAPACITY_PER_SLOT }, (_, i) => {
-                      const r = slotReservations[i];
-                      let color = "";
-                      if (r) {
-                        color =
-                          r.userId === user.id
-                            ? "yellow"
-                            : full
-                              ? "red"
-                              : "blue";
-                      }
-                      return <span key={i} className={`dot-slot ${color}`} />;
-                    })}
                   </div>
+                  <div className="sc-subtitle">{statusText}</div>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  {myReservation ? (
+                <div className={pillClass}>{pillLabel}</div>
+                <button
+                  className="sc-chevron-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleExpanded(slot.start);
+                  }}
+                  aria-label={isExpanded ? "Ver menos" : "Ver detalhes"}
+                >
+                  {isExpanded ? "⌃" : "⌄"}
+                </button>
+              </div>
+
+              {isExpanded && (
+                <div className="sc-details">
+                  {slotReservations.length > 0 && (
+                    <div className="sc-names">
+                      {slotReservations.map((r) => (
+                        <span key={r.id}>
+                          {r.residentName} · {r.apartment}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  <div
+                    className="sc-treadmill-row"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {renderTreadmillButton(
+                      slot,
+                      "during",
+                      myReservation,
+                      blockedSlot,
+                    )}
+                    {renderTreadmillButton(
+                      slot,
+                      "after",
+                      myReservation,
+                      blockedSlot,
+                    )}
+                  </div>
+
+                  {myReservation && (
                     <button
-                      className="cancel-button"
+                      className="sc-cancel-btn"
                       disabled={cancelingId === myReservation.id}
                       onClick={(e) => {
                         e.stopPropagation();
                         handleCancel(myReservation.id);
                       }}
                     >
-                      {cancelingId === myReservation.id ? "..." : "✕"}
+                      {cancelingId === myReservation.id
+                        ? "Cancelando..."
+                        : "Cancelar reserva"}
                     </button>
-                  ) : !full && bookable && !blockedSlot ? (
-                    <span className="chevron">›</span>
-                  ) : null}
+                  )}
 
                   {user.isAdmin && (
                     <button
-                      className="admin-block-button"
+                      className="sc-admin-btn"
                       onClick={(e) => {
                         e.stopPropagation();
                         if (blockedSlot) {
@@ -599,39 +691,18 @@ export default function HomeScreen() {
                           openBlockModal(slot);
                         }
                       }}
-                      title={
-                        blockedSlot ? "Desbloquear" : "Bloquear (manutenção)"
-                      }
                     >
-                      🔧
+                      {blockedSlot
+                        ? "🔧 Desbloquear horário"
+                        : "🔧 Bloquear horário"}
                     </button>
                   )}
-                </div>
-              </div>
-              <div
-                className="treadmill-row"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {renderTreadmillButton(
-                  slot,
-                  "during",
-                  myReservation,
-                  blockedSlot,
-                )}
-                {renderTreadmillButton(
-                  slot,
-                  "after",
-                  myReservation,
-                  blockedSlot,
-                )}
-              </div>
-              {slotReservations.length > 0 && (
-                <div className="slot-names">
-                  {slotReservations.map((r) => (
-                    <span key={r.id}>
-                      {r.residentName} · {r.apartment}
+
+                  {!hasDetails && (
+                    <span className="sc-empty-hint">
+                      Ninguém reservou esse horário ainda.
                     </span>
-                  ))}
+                  )}
                 </div>
               )}
             </div>
