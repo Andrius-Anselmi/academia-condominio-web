@@ -1,153 +1,143 @@
+/* Substitui TODO o conteúdo do LoginScreen.css antigo */
+
 .ls-screen {
-  position: relative;
   min-height: 100vh;
-  width: 100%;
-  overflow: hidden;
-}
-
-/* Equivalente ao Image.asset('assets/images/gym_bg.jpg', fit: BoxFit.cover) */
-.ls-bg {
-  position: absolute;
-  inset: 0;
-  background-image: url("../assets/images/gym_bg.jpg");
-  background-size: cover;
-  background-position: center;
-}
-
-/* Equivalente ao LinearGradient preto do Flutter */
-.ls-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.55),
-    rgba(0, 0, 0, 0.75)
-  );
-}
-
-/* Equivalente ao SafeArea do Flutter (respeita notch / status bar) */
-.ls-safe-area {
-  position: relative;
-  min-height: 100vh;
-  padding-top: env(safe-area-inset-top, 0px);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  min-height: 100dvh;
   display: flex;
-  justify-content: center; /* centraliza a "faixa" mobile no meio da tela */
+  align-items: center;
+  justify-content: center;
+  padding: calc(24px + env(safe-area-inset-top)) 24px
+    calc(24px + env(safe-area-inset-bottom));
+  background: #14161a;
 }
 
 .ls-content {
   width: 100%;
-  max-width: 420px; /* largura tipo app mobile, mesmo em monitor grande */
-  flex: 1;
+  max-width: 400px;
   display: flex;
   flex-direction: column;
-  padding: 20px 24px 30px;
-  box-sizing: border-box;
+  gap: 36px;
 }
 
 .ls-top {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
+  text-align: center;
+}
+
+.ls-mark {
+  width: 88px;
+  height: 88px;
+  border-radius: 24px;
+  background: rgba(232, 163, 61, 0.1);
+  border: 1px solid rgba(232, 163, 61, 0.3);
+  color: #e8a33d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 32px rgba(232, 163, 61, 0.2);
 }
 
 .ls-title {
-  color: #fff;
-  font-size: 30px;
-  font-weight: 600;
-  line-height: 1.15;
-  margin: 0;
-  text-align: center;
+  margin: 22px 0 14px;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: #ffffff;
 }
 
 .ls-badge {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  align-self: center;
-  padding: 8px 14px;
-  border-radius: 30px;
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.24);
-  color: #fff;
-  font-size: 14px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid #262b36;
+  background: #171b24;
+  font-size: 12px;
+  color: #8c93a0;
 }
-
 .ls-badge-dot {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: #22c55e; /* verde, equivalente ao Icons.circle verde */
-  display: inline-block;
+  background: #3fb871;
+}
+.ls-badge-closed .ls-badge-dot {
+  background: #6b7078;
 }
 
-/* Equivalente ao Spacer() do Flutter: empurra o form pro final */
 .ls-form {
-  margin-top: auto;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .ls-input {
   width: 100%;
-  padding: 16px 14px;
-  border-radius: 16px;
-  border: none;
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
-  font-size: 15px;
-  box-sizing: border-box;
+  padding: 15px 16px;
+  border-radius: 14px;
+  border: 1px solid #262b36;
+  background: #171b24;
+  color: #f4f1ea;
+  font-size: 16px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s ease;
 }
-
 .ls-input::placeholder {
-  color: rgba(255, 255, 255, 0.7);
+  color: #6b7078;
 }
-
 .ls-input:focus {
-  outline: 2px solid rgba(201, 138, 68, 0.8); /* accent do Flutter */
-  outline-offset: 1px;
+  border-color: #e8a33d;
+}
+.ls-input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px #171b24 inset;
+  -webkit-text-fill-color: #f4f1ea;
+  caret-color: #f4f1ea;
 }
 
 .ls-error {
-  color: #ff8a8a;
+  margin: 0;
+  padding: 0 4px;
   font-size: 13px;
-  margin: -6px 0 0;
+  color: #e08271;
 }
 
 .ls-button {
+  margin-top: 4px;
   width: 100%;
-  padding: 18px;
+  padding: 15px;
   border: none;
-  border-radius: 30px;
-  background: #c98a44; /* accent do Flutter */
-  color: #fff;
-  font-weight: 700;
+  border-radius: 14px;
+  background: #e8a33d;
+  color: #14161a;
   font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
   cursor: pointer;
   transition: opacity 0.15s ease;
 }
-
+.ls-button:active {
+  opacity: 0.85;
+}
 .ls-button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-.ls-button:not(:disabled):hover {
-  opacity: 0.92;
-}
-
 .ls-forgot {
+  align-self: center;
+  margin-top: 6px;
+  padding: 6px 10px;
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 14px;
+  color: #8c93a0;
+  font-size: 13px;
+  font-family: inherit;
   cursor: pointer;
-  padding: 4px;
-  align-self: center;
 }
-
 .ls-forgot:hover {
-  color: #fff;
+  color: #e8a33d;
 }

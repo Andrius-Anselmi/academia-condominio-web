@@ -1,12 +1,21 @@
 import { useState } from "react";
 import { login } from "../services/authService";
+import DumbbellIcon from "./DumbbellIcon";
 import "./LoginScreen.css";
+
+const OPEN_HOUR = 6; // abre às 06h e fecha à meia-noite
+
+function isGymOpen() {
+  return new Date().getHours() >= OPEN_HOUR;
+}
 
 export default function LoginScreen() {
   const [username, setUsername] = useState("");
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState(null);
   const [carregando, setCarregando] = useState(false);
+
+  const open = isGymOpen();
 
   async function handleLogin(e) {
     e.preventDefault();
@@ -40,57 +49,59 @@ export default function LoginScreen() {
 
   return (
     <div className="ls-screen">
-      <div className="ls-bg" />
-      <div className="ls-overlay" />
-
-      <div className="ls-safe-area">
-        <div className="ls-content">
-          <div className="ls-top">
-            <h1 className="ls-title">Chatêau de La Vie</h1>
-
-            <div className="ls-badge">
-              <span className="ls-badge-dot" />
-              <span>Aberta agora · 06h às 00h</span>
-            </div>
+      <div className="ls-content">
+        <div className="ls-top">
+          <div className="ls-mark">
+            <DumbbellIcon size={48} />
           </div>
+          <h1 className="ls-title">Château de La Vie</h1>
 
-          <form onSubmit={handleLogin} className="ls-form" autoComplete="on">
-            <input
-              className="ls-input"
-              type="text"
-              name="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Usuário"
-              autoCapitalize="none"
-              autoComplete="username"
-            />
-
-            <input
-              className="ls-input"
-              type="password"
-              name="password"
-              value={senha}
-              onChange={(e) => setSenha(e.target.value)}
-              placeholder="Senha"
-              autoComplete="current-password"
-            />
-
-            {erro && <p className="ls-error">{erro}</p>}
-
-            <button className="ls-button" type="submit" disabled={carregando}>
-              {carregando ? "Entrando..." : "Entrar"}
-            </button>
-
-            <button
-              type="button"
-              className="ls-forgot"
-              onClick={handleForgotPassword}
-            >
-              Esqueceu sua senha?
-            </button>
-          </form>
+          <div className={`ls-badge ${open ? "" : "ls-badge-closed"}`}>
+            <span className="ls-badge-dot" />
+            <span>
+              {open
+                ? "Aberta agora · 06h às 00h"
+                : "Fechada agora · abre às 06h"}
+            </span>
+          </div>
         </div>
+
+        <form onSubmit={handleLogin} className="ls-form" autoComplete="on">
+          <input
+            className="ls-input"
+            type="text"
+            name="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="Usuário"
+            autoCapitalize="none"
+            autoComplete="username"
+          />
+
+          <input
+            className="ls-input"
+            type="password"
+            name="password"
+            value={senha}
+            onChange={(e) => setSenha(e.target.value)}
+            placeholder="Senha"
+            autoComplete="current-password"
+          />
+
+          {erro && <p className="ls-error">{erro}</p>}
+
+          <button className="ls-button" type="submit" disabled={carregando}>
+            {carregando ? "Entrando..." : "Entrar"}
+          </button>
+
+          <button
+            type="button"
+            className="ls-forgot"
+            onClick={handleForgotPassword}
+          >
+            Esqueceu sua senha?
+          </button>
+        </form>
       </div>
     </div>
   );

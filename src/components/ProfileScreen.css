@@ -1,0 +1,339 @@
+/* Só o que é novo. Os estilos de .slot-card-v2, .sc-* e .profile-month continuam os seus. */
+.profile-screen {
+  --pf-accent: #e8a23c;
+  --pf-surface: rgba(255, 255, 255, 0.05);
+  --pf-line: rgba(255, 255, 255, 0.1);
+  --pf-muted: rgba(255, 255, 255, 0.55);
+}
+.profile-screen[data-theme="light"] {
+  --pf-surface: rgba(0, 0, 0, 0.04);
+  --pf-line: rgba(0, 0, 0, 0.1);
+  --pf-muted: rgba(0, 0, 0, 0.55);
+}
+
+/* Topo */
+.pf-hero {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 20px 18px;
+}
+.pf-avatar {
+  position: relative;
+  flex: none;
+  box-sizing: border-box;
+  width: 84px;
+  height: 84px;
+  min-width: 84px;
+  min-height: 84px;
+  border-radius: 50%;
+  background: var(--pf-accent);
+  color: #1b1304;
+  font-size: 32px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.pf-avatar img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.pf-avatar-cam {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #fff;
+  color: #1b1304;
+  font-size: 18px;
+  line-height: 26px;
+  text-align: center;
+  border: 2px solid #0c0f17;
+}
+.pf-avatar:focus-within {
+  outline: 2px solid var(--pf-accent);
+  outline-offset: 3px;
+}
+.pf-name {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+}
+.pf-apt {
+  margin-top: 2px;
+  color: var(--pf-muted);
+  font-size: 14px;
+}
+
+/* Números */
+.pf-stats {
+  padding-inline: 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.3fr;
+  border-block: 1px solid var(--pf-line);
+}
+.pf-stat {
+  padding: 14px 0 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.pf-stat + .pf-stat {
+  padding-left: 16px;
+  border-left: 1px solid var(--pf-line);
+}
+.pf-stat strong {
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+.pf-stat span {
+  font-size: 12.5px;
+  color: var(--pf-muted);
+}
+
+/* Faixa da semana: o destaque da tela */
+.pf-week {
+  display: flex;
+  justify-content: space-between;
+  padding: 16px 20px 22px;
+}
+.pf-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.pf-dot {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--pf-surface);
+  color: #1b1304;
+}
+.pf-dot svg {
+  width: 20px;
+  height: 20px;
+}
+.pf-dot.is-done {
+  background: var(--pf-accent);
+}
+.pf-dot.is-booked {
+  box-shadow: inset 0 0 0 2px var(--pf-accent);
+}
+.pf-dot.is-today:not(.is-done) {
+  box-shadow: inset 0 0 0 2px var(--pf-muted);
+}
+.pf-day-label {
+  font-size: 12px;
+  color: var(--pf-muted);
+}
+
+/* Cartão com anotação */
+.pf-add {
+  flex: none;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px dashed var(--pf-muted);
+  background: transparent;
+  color: var(--pf-muted);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.pf-add:focus-visible,
+.pf-btn:focus-visible,
+.pf-editor textarea:focus-visible {
+  outline: 2px solid var(--pf-accent);
+  outline-offset: 2px;
+}
+.pf-row {
+  cursor: pointer;
+}
+.pf-row:focus-visible {
+  outline: 2px solid var(--pf-accent);
+  outline-offset: 4px;
+  border-radius: 12px;
+}
+.pf-body {
+  margin-top: 12px;
+}
+.pf-chevron {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  margin-right: 6px;
+  border-right: 2px solid var(--pf-muted);
+  border-bottom: 2px solid var(--pf-muted);
+  transform: rotate(45deg);
+  transition: transform 0.2s;
+}
+.pf-chevron.has-note {
+  border-color: var(--pf-accent);
+}
+.pf-chevron.is-open {
+  transform: rotate(-135deg);
+}
+.pf-link {
+  margin-top: 10px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--pf-accent);
+  font: inherit;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+.pf-note {
+  margin: 0;
+  padding-left: 12px;
+  border-left: 3px solid var(--pf-accent);
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.pf-editor textarea {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  padding: 10px 12px;
+  border: 1px solid var(--pf-line);
+  border-radius: 10px;
+  background: var(--pf-surface);
+  color: inherit;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.pf-editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+.pf-btn {
+  padding: 7px 16px;
+  border: 1px solid var(--pf-line);
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+.pf-btn-primary {
+  background: var(--pf-accent);
+  border-color: var(--pf-accent);
+  color: #1b1304;
+  font-weight: 600;
+}
+
+.pf-toast {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: 96px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #fff;
+  color: #111;
+  font-size: 14px;
+  text-align: center;
+}
+
+/* Enquadramento da foto de perfil */
+.crop-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.75);
+}
+.crop-sheet {
+  width: min(100%, 380px);
+  padding: 18px;
+  border-radius: 20px;
+  background: #12151f;
+  color: #fff;
+}
+.crop-title {
+  margin: 0 0 14px;
+  font-size: 17px;
+  font-weight: 700;
+}
+.crop-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #000;
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+}
+.crop-stage:active {
+  cursor: grabbing;
+}
+.crop-stage img {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  max-width: none;
+  transform-origin: center;
+  pointer-events: none;
+}
+.crop-circle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-sizing: border-box;
+  box-shadow: 0 0 0 999px rgba(0, 0, 0, 0.62);
+  pointer-events: none;
+}
+.crop-zoom {
+  width: 100%;
+  margin: 18px 0 14px;
+  accent-color: var(--pf-accent, #e8a23c);
+}
+
+/* Meses recolhíveis */
+.pf-month-toggle {
+  width: 100%;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.pf-month-toggle:focus-visible {
+  outline: 2px solid var(--pf-accent);
+  outline-offset: 2px;
+}
+.pf-month-end {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pf-stat-streak strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}

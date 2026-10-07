@@ -42,6 +42,20 @@ export function listenToDayReservations(date, callback) {
   return () => supabase.removeChannel(channel);
 }
 
+// Histórico completo de um morador (usado na tela de perfil)
+export async function getUserReservations(userId) {
+  const { data, error } = await supabase
+    .from("reservas")
+    .select("*")
+    .eq("usuario_id", userId)
+    .order("data", { ascending: false })
+    .order("hora_inicio", { ascending: false });
+
+  if (error) throw error;
+
+  return (data || []).map(mapReservation);
+}
+
 export async function createReservation({
   userId,
   apartment,
