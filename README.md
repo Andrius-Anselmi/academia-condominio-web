@@ -11,8 +11,8 @@ O sistema foi pensado para dois perfis principais:
 
 <table>
   <tr>
-    <td align="center"><strong>Tela de Login</strong></td>
     <td align="center"><strong>Tela de Horários</strong></td>
+    <td align="center"><strong>Tela de Perfil</strong></td>
   </tr>
   <tr>
     <td><img src="docs/images/tela-de-login.png" width="280" alt="Tela de login da aplicação"></td>
