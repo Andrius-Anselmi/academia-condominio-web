@@ -15,7 +15,7 @@ O sistema foi pensado para dois perfis principais:
     <td align="center"><strong>Tela de Horários</strong></td>
   </tr>
   <tr>
-    <td><img src="docs/images/tela-login.png" width="280" alt="Tela de login da aplicação"></td>
+    <td><img src="docs/images/tela-de-login.png" width="280" alt="Tela de login da aplicação"></td>
     <td><img src="docs/images/tela-horarios.png" width="280" alt="Tela de horários com disponibilidade, status e avisos"></td>
   </tr>
 </table>
