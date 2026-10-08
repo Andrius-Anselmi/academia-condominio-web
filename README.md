@@ -1,176 +1,383 @@
-# Sistema de Reservas da Academia
+<div align="center">
 
-Aplicação web desenvolvida para digitalizar a gestão de reservas da academia do condomínio. O objetivo é substituir controles manuais, mensagens dispersas e planilhas por uma interface única onde moradores podem consultar horários, reservar a utilização do espaço e acompanhar avisos importantes em tempo real.
+<img src="docs/images/banner.svg" alt="FitZone: reserve seu horário, treine sem fila" width="100%">
 
-O sistema foi pensado para dois perfis principais:
+<br><br>
 
-- Moradores, que acessam a aplicação para entrar com seu usuário, visualizar a disponibilidade e reservar um horário.
-- Administradores, que além das reservas também podem bloquear e desbloquear horários para manutenção e publicar avisos para todos os usuários.
+![React](https://img.shields.io/badge/REACT_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![Vite](https://img.shields.io/badge/VITE-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![Supabase](https://img.shields.io/badge/SUPABASE-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
+![PWA](https://img.shields.io/badge/PWA-5A0FC8?style=for-the-badge&logo=pwa&logoColor=white)
+![Vercel](https://img.shields.io/badge/VERCEL-000000?style=for-the-badge&logo=vercel&logoColor=white)
+![MIT](https://img.shields.io/badge/LICENÇA-MIT-F59E0B?style=for-the-badge)
 
-## Screenshots
+**O app de reservas da academia do condomínio.**<br>
+Veja a lotação em tempo real, garanta seu horário em segundos e acompanhe sua evolução treino a treino.
 
+<br>
+
+[**▶ Abrir o app**](https://academia-condominio-web.vercel.app) &nbsp;·&nbsp;
+[Visão geral](#-visão-geral) &nbsp;·&nbsp;
+[Funcionalidades](#-funcionalidades) &nbsp;·&nbsp;
+[Como funciona](#-como-funciona) &nbsp;·&nbsp;
+[Arquitetura](#-arquitetura) &nbsp;·&nbsp;
+[Rodar localmente](#-rodar-localmente)
+
+</div>
+
+<br>
+
+<div align="center">
 <table>
   <tr>
-    <td align="center"><strong>Tela de Horários</strong></td>
-    <td align="center"><strong>Tela de Perfil</strong></td>
+    <td align="center"><img src="docs/images/tela-de-login.png" width="290" alt="Tela de horários com disponibilidade, status e avisos"></td>
+    <td align="center"><img src="docs/images/tela-de-horarios.png" width="290" alt="Tela de perfil com resumo, semana e histórico de treinos"></td>
   </tr>
   <tr>
-    <td><img src="docs/images/tela-de-login.png" width="280" alt="Tela de login da aplicação"></td>
-    <td><img src="docs/images/tela-de-horarios.png" width="280" alt="Tela de horários com disponibilidade, status e avisos"></td>
+    <td align="center"><b>Horários</b><br><sub>Disponibilidade por dia, status de cada faixa e avisos do condomínio</sub></td>
+    <td align="center"><b>Perfil</b><br><sub>Resumo, faixa da semana, histórico por mês e anotações por treino</sub></td>
   </tr>
 </table>
+</div>
 
-## O Que A Aplicação Resolve
+<br>
 
-Antes da solução digital, a gestão de uma academia de condomínio costuma depender de comunicação manual, o que gera conflitos, dúvidas sobre disponibilidade e dificuldade para registrar bloqueios ou comunicados. Este projeto resolve esse problema central ao centralizar em uma única interface:
+## ✨ Visão geral
 
-- Consulta de disponibilidade de horários por dia.
-- Reserva de horários com atualização imediata.
-- Controle de limite de ocupação por faixa horária.
-- Bloqueio de horários por manutenção ou necessidade operacional.
-- Publicação de avisos visíveis para os moradores.
-- Autenticação integrada com o banco de dados, permitindo saber quem está logado e o que cada usuário pode fazer.
+O FitZone nasceu para acabar com a bagunça de reservar a academia por mensagem de grupo e planilha. Hoje, tudo acontece em uma única tela, com regras claras e atualização na hora para todo mundo.
 
-## Principais Funcionalidades
+<div align="center">
+<table>
+  <tr>
+    <td align="center"><h2>4</h2><sub>vagas por horário</sub></td>
+    <td align="center"><h2>7</h2><sub>dias à frente</sub></td>
+    <td align="center"><h2>48 h</h2><sub>de antecedência<br>para reservar</sub></td>
+    <td align="center"><h2>1 h</h2><sub>por sessão</sub></td>
+  </tr>
+</table>
+</div>
 
-### Autenticação
+### Antes e depois
 
-- Login com usuário e senha.
-- Sessão persistente via Supabase.
-- Verificação automática da sessão ao abrir a aplicação.
-- Revalidação da sessão quando a aba volta a ficar visível, reduzindo problemas de expiração silenciosa de token.
+| | Antes | Com o FitZone |
+| --- | --- | --- |
+| **Reservar** | Mensagem no grupo, esperando alguém responder | Um toque, com confirmação imediata |
+| **Lotação** | Ninguém sabia quantas pessoas estariam lá | Status de cada horário em tempo real |
+| **Manutenção** | Aviso solto, fácil de passar batido | Horário bloqueado no app, com o motivo |
+| **Comunicados** | Perdidos no meio do grupo | Mural de avisos dentro do app |
+| **Acompanhamento** | Nenhum | Histórico, sequência semanal e anotações |
 
-### Reservas
+Funciona direto no navegador e pode ser instalado na tela inicial do celular, como um aplicativo de verdade.
 
-- Exibição dos horários da academia em blocos de 1 hora.
-- Navegação entre os próximos 7 dias.
-- Reserva otimista, com atualização visual imediata enquanto a operação é processada.
-- Cancelamento de reserva pelo próprio morador.
-- Bloqueio de novas reservas quando o usuário já possui uma reserva no mesmo dia.
-- Indicação visual de estados como disponível, lotado, encerrado, ainda não liberado, sua reserva e bloqueado.
+## 🚀 Funcionalidades
 
-### Administração
+### 📅 Reservas
 
-- Bloqueio de horário com motivo, como manutenção.
-- Desbloqueio do horário quando a restrição deixa de existir.
-- Publicação de avisos gerais.
-- Remoção de avisos feitos pelo próprio autor ou por administradores.
+- Horários em **blocos de 1 hora**, com navegação pelos **próximos 7 dias**
+- **Reserva otimista:** a tela atualiza no mesmo instante, enquanto o servidor confirma em segundo plano
+- **Cancelamento** pelo próprio morador, com um toque
+- Máximo de **uma reserva por morador no mesmo dia**
+- Tema **claro e escuro**
 
-### Avisos em Tempo Real
+Cada horário mostra seu estado de forma visual:
 
-- Lista de avisos atualizada em tempo real com Supabase Realtime.
-- Exibição do nome e do apartamento de quem publicou o aviso.
-- Possibilidade de remover avisos diretamente da interface, respeitando as regras de permissão.
+| Estado | Quando acontece |
+| --- | --- |
+| 🔵 **Disponível** | Ainda há vaga e o horário está aberto |
+| 🔴 **Lotado** | As 4 vagas foram preenchidas |
+| 🟠 **Sua reserva** | Você já reservou esse horário |
+| ⚪ **Encerrado** | O horário já passou ou fechou para reservas |
+| 🕒 **Ainda não liberado** | Faltam mais de 48 h para o início |
+| 🔒 **Bloqueado** | A administração bloqueou o horário (ex.: manutenção) |
 
-## Regras De Negócio Observadas
+### 🔥 Perfil e evolução
 
-O comportamento da aplicação mostra algumas regras importantes:
+- **Foto de perfil** com enquadramento por arrastar e zoom (com pinça, slider ou scroll), como no WhatsApp
+- **Resumo:** total de treinos, treinos no mês e semanas seguidas
+- **Faixa da semana** de segunda a domingo: dias treinados preenchidos, dias agendados com contorno e o dia de hoje destacado
+- **Sequência semanal:** quantas semanas seguidas você treinou pelo menos uma vez
 
-- Cada horário comporta até 4 reservas.
-- Um usuário não pode ter duas reservas no mesmo dia.
-- O horário abre para reserva 48 horas antes do início do slot.
-- O horário encerra 10 minutos antes do início do slot.
-- Horários bloqueados por administração ficam indisponíveis para moradores.
+> [!NOTE]
+> **Como a sequência é contada.** Cada semana (segunda a domingo) precisa ter pelo menos **1 treino concluído**. Treinar uma ou cinco vezes na mesma semana vale igual. Se a semana atual ainda não tem treino, ela **não quebra** a sequência: a contagem parte da semana passada. Já uma semana inteira sem treino zera tudo.
 
-## Tecnologias Utilizadas
+### 📝 Histórico com anotações
 
-- React 19
-- Vite
-- Supabase
-- JavaScript moderno com módulos ES
-- ESLint para padronização e qualidade do código
+- **Semana atual em destaque** no topo, com treinos concluídos e agendados
+- **Meses anteriores recolhidos**, que abrem ao toque e mostram a quantidade de treinos
+- **Anotação por treino:** exercícios, cargas, como foi a sessão. O card expande ao toque, e a anotação pode ser editada ou removida
+- Um treino só entra no histórico como **concluído depois do horário de término**, inclusive sessões que viram a meia-noite
 
-## Integração Com O Backend
+### 📣 Avisos em tempo real
 
-A aplicação usa o Supabase como backend principal, incluindo autenticação, banco de dados e realtime. Pelo código do projeto, a interface conversa com as seguintes estruturas:
+- Mural de comunicados do condomínio, atualizado sem recarregar a tela (**Supabase Realtime**)
+- Mostra o **nome e o apartamento** de quem publicou
+- Autores removem os próprios avisos, e administradores removem qualquer um
 
-- Tabela `usuarios`, para obter o perfil do usuário autenticado.
-- Tabela `reservas`, para listar, criar e cancelar reservas.
-- Tabela `bloqueios`, para controlar horários indisponíveis.
-- Tabela `avisos`, para publicar e listar comunicados.
-- Funções RPC `reservar_horario`, `bloquear_horario` e `desbloquear_horario`, responsáveis pelas operações principais de negócio.
+### 🛠️ Painel do administrador
 
-## Estrutura Do Projeto
+- **Bloquear e desbloquear horários**, informando o motivo (como manutenção)
+- **Publicar avisos** para todos os moradores
+- **Remover qualquer aviso**, independentemente do autor
+
+## ⚙️ Como funciona
+
+### Ciclo de vida de um horário
+
+```mermaid
+flowchart LR
+    A([Mais de 48 h antes]) -->|"Ainda não liberado"| B([48 h antes<br/>abre para reserva])
+    B -->|"Disponível ou lotado"| C([10 min antes<br/>fecha para reserva])
+    C -->|"Encerrado"| D([Início da sessão])
+    D --> E([Fim da sessão<br/>treino conta no histórico])
+    style B fill:#F59E0B,color:#111,stroke:#F59E0B
+    style E fill:#3ECF8E,color:#111,stroke:#3ECF8E
+```
+
+### O que acontece quando você reserva
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor M as Morador
+    participant A as App (React)
+    participant S as Supabase
+    participant O as Outros moradores
+
+    M->>A: Toca em "reservar"
+    A-->>M: Atualiza a tela na hora (reserva otimista)
+    A->>S: RPC reservar_horario
+    S->>S: Valida as regras (vagas, 1 por dia, janela de tempo, bloqueios)
+    alt Regras atendidas
+        S-->>A: Reserva confirmada
+        S-->>O: Realtime: lotação atualizada
+    else Regra violada
+        S-->>A: Erro
+        A-->>M: Desfaz a atualização e explica o motivo
+    end
+```
+
+### Regras de negócio
+
+| Regra | Valor |
+| --- | --- |
+| Vagas por horário | **4** |
+| Reservas por morador no mesmo dia | **1** |
+| Abertura da reserva | **48 h** antes do início |
+| Encerramento da reserva | **10 min** antes do início |
+| Horário bloqueado | Indisponível para moradores |
+| Treino concluído | Conta após o **horário de término** |
+| Semanas seguidas | Semanas (seg a dom) com **≥ 1 treino concluído** |
+
+> [!IMPORTANT]
+> As regras de reserva são validadas **no servidor**, por funções RPC do Supabase. Isso garante que elas valem mesmo que alguém tente burlar a interface.
+
+## 🏗️ Arquitetura
+
+```mermaid
+flowchart TB
+    subgraph Cliente["📱 Cliente (PWA)"]
+        UI["React 19 + Vite"]
+        SVC["Serviços<br/>auth · reservas · avisos"]
+        LS[("localStorage<br/>foto e anotações")]
+        UI --> SVC
+        UI --> LS
+    end
+
+    subgraph Supabase["☁️ Supabase"]
+        AUTH["Auth"]
+        DB[("Postgres<br/>usuarios · reservas<br/>bloqueios · avisos")]
+        RPC["Funções RPC<br/>reservar · bloquear · desbloquear"]
+        RT["Realtime"]
+        RPC --> DB
+        DB --> RT
+    end
+
+    SVC --> AUTH
+    SVC --> RPC
+    SVC --> DB
+    RT -.->|"atualizações ao vivo"| SVC
+
+    Vercel["▲ Vercel<br/>hospedagem"] --> Cliente
+```
+
+### Stack
+
+| Camada | Tecnologia | Papel |
+| --- | --- | --- |
+| Interface | **React 19** | Componentes e estado |
+| Build | **Vite** | Desenvolvimento rápido e build de produção |
+| Backend | **Supabase** | Autenticação, banco, RPC e Realtime |
+| Hospedagem | **Vercel** | Deploy contínuo |
+| Instalação | **PWA** | App na tela inicial, em tela cheia |
+| Qualidade | **ESLint** | Padronização do código |
+
+### Backend
+
+| Recurso | Uso |
+| --- | --- |
+| Tabela `usuarios` | Perfil do usuário autenticado |
+| Tabela `reservas` | Listar, criar e cancelar reservas |
+| Tabela `bloqueios` | Horários indisponíveis |
+| Tabela `avisos` | Comunicados |
+| RPC `reservar_horario` | Cria a reserva validando as regras |
+| RPC `bloquear_horario` | Bloqueia um horário (admin) |
+| RPC `desbloquear_horario` | Libera um horário bloqueado (admin) |
+
+<details>
+<summary><b>📂 Estrutura do projeto</b></summary>
+
+<br>
 
 ```text
 src/
-	App.jsx                 # Controla a sessão, splash e troca entre login e home
-	App.css                 # Estilos gerais da aplicação
-	index.css               # Estilos base do documento
-	main.jsx                # Ponto de entrada do React
-	supabaseClient.js       # Configuração do cliente Supabase
-	components/
-		LoginScreen.jsx       # Tela de autenticação
-		LoginScreen.css       # Estilos da tela de login
-		HomeScreen.jsx        # Tela principal com reservas, avisos e ações de admin
-		SplashScreen.jsx      # Tela de carregamento
-	models/
-		timeSlots.js          # Lista dos horários disponíveis
-	services/
-		authService.js        # Login, logout e carregamento do usuário
-		reservationsService.js# Operações e listeners de reservas e bloqueios
-		announcementsService.js# Operações e listeners de avisos
+├── App.jsx                     # Sessão, splash e troca entre login e home
+├── main.jsx                    # Ponto de entrada
+├── supabaseClient.js           # Cliente Supabase
+├── components/
+│   ├── LoginScreen.jsx         # Autenticação
+│   ├── HomeScreen.jsx          # Reservas, avisos e ações de admin
+│   ├── ProfileScreen.jsx       # Resumo, semana, histórico e anotações
+│   ├── AvatarCropper.jsx       # Enquadramento da foto de perfil
+│   ├── FlameIcon.jsx           # Ícone da sequência semanal
+│   ├── DumbbellIcon.jsx
+│   └── SplashScreen.jsx        # Tela de carregamento
+├── models/
+│   └── timeSlots.js            # Lista dos horários
+└── services/
+    ├── authService.js          # Login, logout e usuário atual
+    ├── reservationsService.js  # Reservas e bloqueios
+    ├── announcementsService.js # Avisos
+    ├── activityNotes.js        # Anotações por treino
+    └── activityPhotos.js       # Foto de perfil
 ```
 
-## Fluxo Da Aplicação
+</details>
 
-1. A aplicação inicia em `main.jsx` e monta o componente principal `App`.
-2. `App.jsx` consulta a sessão do Supabase e exibe uma splash enquanto carrega.
-3. Se houver sessão ativa, o usuário vai para a tela principal; caso contrário, vê a tela de login.
-4. Em `HomeScreen.jsx`, a aplicação carrega o perfil do usuário, escuta as reservas, bloqueios e avisos do dia selecionado e atualiza a interface em tempo real.
-5. As ações de reserva, cancelamento, bloqueio e publicação de aviso são repassadas aos serviços em `src/services`.
+<details>
+<summary><b>🧠 Decisões técnicas</b></summary>
 
-## Como Rodar O Projeto
+<br>
+
+- **Login por usuário:** o nome de usuário é mapeado para um e-mail interno e autenticado com `signInWithPassword`. O morador não precisa de e-mail real.
+- **Sessão resiliente:** a sessão é revalidada quando a aba volta a ficar visível, evitando expiração silenciosa do token.
+- **Logout com reload:** a página é recarregada ao sair, o que melhora o comportamento do autofill em alguns navegadores.
+- **Reserva otimista:** a interface atualiza antes da confirmação e desfaz a mudança se o servidor recusar.
+- **Tempo real:** reservas, bloqueios e avisos usam listeners do Supabase Realtime.
+- **Foto e anotações locais:** por enquanto ficam no `localStorage`. A foto é recortada e redimensionada antes de salvar (cerca de 400×400, ~40 KB). Para sincronizar entre aparelhos, basta trocar as funções de `activityNotes.js` e `activityPhotos.js` por chamadas ao Supabase.
+- **Treino concluído:** calculado com o relógio do aparelho, tratando corretamente sessões que atravessam a meia-noite.
+- **Acessibilidade:** os cards do histórico funcionam por teclado (Enter e espaço) e informam o estado aberto ou fechado para leitores de tela.
+- **Mobile first:** layout pensado para tela estreita, com navegação inferior e cantos arredondados.
+
+</details>
+
+## 💻 Rodar localmente
 
 ### Pré-requisitos
 
-- Node.js instalado.
-- Um projeto Supabase configurado.
-- Variáveis de ambiente com a URL e a chave anônima do Supabase.
+- [Node.js](https://nodejs.org) 18 ou superior
+- Um projeto no [Supabase](https://supabase.com) com as tabelas e funções descritas em [Backend](#backend)
 
-### Instalação
+### Passo a passo
 
 ```bash
+# 1. Instale as dependências
 npm install
-```
 
-### Variáveis De Ambiente
+# 2. Crie o arquivo .env na raiz do projeto (veja a tabela abaixo)
 
-Crie um arquivo `.env` na raiz do projeto com as variáveis abaixo:
-
-```bash
-VITE_SUPABASE_URL=sua_url_do_supabase
-VITE_SUPABASE_ANON_KEY=sua_chave_anonima_do_supabase
-```
-
-### Scripts Disponíveis
-
-- `npm run dev` inicia o ambiente de desenvolvimento com Vite.
-- `npm run build` gera a versão de produção.
-- `npm run preview` serve a build localmente.
-- `npm run lint` executa a análise estática com ESLint.
-
-### Execução Em Desenvolvimento
-
-```bash
+# 3. Inicie o ambiente de desenvolvimento
 npm run dev
 ```
 
-## Observações Técnicas
+| Variável | Descrição |
+| --- | --- |
+| `VITE_SUPABASE_URL` | URL do projeto Supabase |
+| `VITE_SUPABASE_ANON_KEY` | Chave anônima (pública) do Supabase |
 
-- A autenticação usa `signInWithPassword` do Supabase, com mapeamento do nome de usuário para um e-mail no domínio `@seucondominio.app`.
-- O logout força um reload da página para melhorar o comportamento de autofill em alguns navegadores.
-- A lista de reservas e avisos usa listeners do Supabase Realtime para refletir mudanças sem precisar recarregar a tela.
-- A interface foi desenhada para uso em tela estreita, com layout centralizado e foco em mobile.
+### Scripts
 
-## Possíveis Próximos Passos
+| Comando | O que faz |
+| --- | --- |
+| `npm run dev` | Servidor de desenvolvimento com Vite |
+| `npm run build` | Gera a versão de produção |
+| `npm run preview` | Serve a build localmente |
+| `npm run lint` | Análise estática com ESLint |
 
-- Separar perfis de administração em telas ou rotas dedicadas.
-- Criar fluxo de recuperação de senha.
-- Adicionar histórico de reservas por morador.
-- Incluir métricas de ocupação e relatórios administrativos.
-- Melhorar a documentação do banco de dados com o schema completo das tabelas e RPCs.
+### 📲 Instalar no celular
 
-## Licença
+| Sistema | Como instalar |
+| --- | --- |
+| **iPhone** | Abra no Safari, toque em **Compartilhar** e depois em **Adicionar à Tela de Início** |
+| **Android** | Abra no Chrome, toque no menu **⋮** e depois em **Instalar app** |
 
-Este projeto está licenciado sob a [MIT License](LICENSE).
+## 🗺️ Roadmap
+
+**Já entregue**
+
+- [x] Reservas com limite de vagas, janela de tempo e bloqueios
+- [x] Avisos em tempo real
+- [x] Perfil com foto enquadrada, resumo e sequência semanal
+- [x] Histórico por semana e por mês
+- [x] Anotação por treino
+
+**Próximos passos**
+
+- [ ] Sincronizar foto e anotações na conta (Supabase Storage)
+- [ ] Meta semanal de treinos configurável
+- [ ] Lembrete antes do horário reservado
+- [ ] Compartilhar um treino como imagem
+- [ ] Recuperação de senha
+- [ ] Painel de administração com métricas de ocupação
+- [ ] Documentação completa do schema do banco (tabelas, RLS e RPCs)
+
+## ❓ Perguntas frequentes
+
+<details>
+<summary><b>Posso reservar mais de um horário no mesmo dia?</b></summary>
+
+<br>
+
+Não. Cada morador pode ter uma reserva por dia, para que mais pessoas consigam treinar.
+
+</details>
+
+<details>
+<summary><b>Até quando posso reservar ou cancelar?</b></summary>
+
+<br>
+
+A reserva abre 48 horas antes do início do horário e fecha 10 minutos antes.
+
+</details>
+
+<details>
+<summary><b>Por que meu treino ainda aparece como "agendado"?</b></summary>
+
+<br>
+
+Um treino só conta como concluído depois do horário de término. Se você reservou das 14h às 15h, ele fica como agendado até as 15h.
+
+</details>
+
+<details>
+<summary><b>Minhas anotações e minha foto vão para outro celular?</b></summary>
+
+<br>
+
+Por enquanto, não. Elas ficam salvas no aparelho em que foram criadas. Sincronizar na conta está no roadmap.
+
+</details>
+
+## 📄 Licença
+
+Distribuído sob a [licença MIT](LICENSE).
+
+<br>
+
+<div align="center">
+
+**Feito com 💪 por [Andrius Anselmi](https://github.com/) para os moradores do condomínio.**
+
+<sub>Gostou? Deixe uma ⭐ no repositório.</sub>
+
+</div>
